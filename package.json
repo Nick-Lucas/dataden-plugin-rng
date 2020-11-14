@@ -2,7 +2,17 @@
   "name": "mydata-plugin-rng",
   "version": "1.0.0",
   "description": "An example plugin, useful as a test plugin",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "scripts": {
+    "build": "rollup -c rollup.config.js --watch"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@wessberg/rollup-plugin-ts": "^1.3.8",
+    "rollup": "^2.33.2",
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.5"
+  }
 }
