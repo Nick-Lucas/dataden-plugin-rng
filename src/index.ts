@@ -1,18 +1,60 @@
-import { createDataLoader, DataPayload } from "@mydata/sdk";
+import { createPlugin } from "@mydata/sdk";
 
-export default createDataLoader({
-  every: 1,
-  grain: 'minute'
-},
-async (request) => {
-  return {
-    lastDate: new Date(),
-    mode: 'append',
-    data: [
-      {
-        uniqueId: Date.now,
-        number: Math.trunc((Math.random() * 1000))
+interface PluginSettings {
+  instanceId: string
+}
+
+export default createPlugin({
+  name: "random_number",
+  getDefaultSettings: async () => {
+    return {
+      plugin: {
+        instanceId: 'a'
+      } as PluginSettings,
+      schedule: {
+        every: 1,
+        grain: 'minute'
       }
-    ]
-  }
+    }
+  },
+  loaders: [
+    {
+      name: 'numbers1',
+      load: async (settings, request) => {
+        const plugin = settings.plugin as PluginSettings
+  
+        return {
+          lastDate: new Date(),
+          mode: 'append',
+          data: [
+            {
+              uniqueId: Date.now,
+              number: Math.trunc((Math.random() * 1000)),
+              instance: plugin.instanceId,
+              loader: 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'numbers2',
+      load: async (settings, request) => {
+        const plugin = settings.plugin as PluginSettings
+  
+        return {
+          lastDate: new Date(),
+          mode: 'append',
+          data: [
+            {
+              uniqueId: Date.now,
+              number: Math.trunc((Math.random() * 1000)),
+              instance: plugin.instanceId,
+              loader: 2
+            }
+          ]
+        }
+      }
+    }
+  ]
 })

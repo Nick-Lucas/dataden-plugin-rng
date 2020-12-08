@@ -55,23 +55,66 @@ function __generator(thisArg, body) {
     }
 }
 
-var index = sdk.createDataLoader({
-    every: 1,
-    grain: 'minute'
-}, function (request) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/, {
-                lastDate: new Date(),
-                mode: 'append',
-                data: [
-                    {
-                        uniqueId: Date.now,
-                        number: Math.trunc((Math.random() * 1000))
+var index = sdk.createPlugin({
+    name: "random_number",
+    getDefaultSettings: function () { return __awaiter(void 0, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/, {
+                    plugin: {
+                        instanceId: 'a'
+                    },
+                    schedule: {
+                        every: 1,
+                        grain: 'minute'
                     }
-                ]
-            }];
-    });
-}); });
+                }];
+        });
+    }); },
+    loaders: [
+        {
+            name: 'numbers1',
+            load: function (settings, request) { return __awaiter(void 0, void 0, void 0, function () {
+                var plugin;
+                return __generator(this, function (_a) {
+                    plugin = settings.plugin;
+                    return [2 /*return*/, {
+                            lastDate: new Date(),
+                            mode: 'append',
+                            data: [
+                                {
+                                    uniqueId: Date.now,
+                                    number: Math.trunc((Math.random() * 1000)),
+                                    instance: plugin.instanceId,
+                                    loader: 1
+                                }
+                            ]
+                        }];
+                });
+            }); }
+        },
+        {
+            name: 'numbers2',
+            load: function (settings, request) { return __awaiter(void 0, void 0, void 0, function () {
+                var plugin;
+                return __generator(this, function (_a) {
+                    plugin = settings.plugin;
+                    return [2 /*return*/, {
+                            lastDate: new Date(),
+                            mode: 'append',
+                            data: [
+                                {
+                                    uniqueId: Date.now,
+                                    number: Math.trunc((Math.random() * 1000)),
+                                    instance: plugin.instanceId,
+                                    loader: 2
+                                }
+                            ]
+                        }];
+                });
+            }); }
+        }
+    ]
+});
 
 module.exports = index;
 //# sourceMappingURL=index.js.map

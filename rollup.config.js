@@ -4,12 +4,13 @@ import commonjs from '@rollup/plugin-commonjs'
 /**
  * @type {() => import("rollup").RollupOptions}
  */
-export default ({ includeNodeModules = false } = {}) => ({
+export default () => ({
   input: 'src/index.ts',
   output: {
     dir: 'dist',
     format: 'cjs',
-    sourcemap: true
+    sourcemap: true,
+    exports: 'default'
   },
   plugins: [
     typescript({
