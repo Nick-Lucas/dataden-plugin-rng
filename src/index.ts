@@ -24,7 +24,7 @@ export default createPlugin({
         const plugin = settings.plugin as PluginSettings
   
         return {
-          lastDate: new Date(),
+          lastDate: new Date().toISOString(),
           mode: 'append',
           data: [
             {
@@ -43,7 +43,7 @@ export default createPlugin({
         const plugin = settings.plugin as PluginSettings
   
         return {
-          lastDate: new Date(),
+          lastDate: new Date().toISOString(),
           mode: 'append',
           data: [
             {
