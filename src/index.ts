@@ -20,9 +20,11 @@ export default createPlugin({
   loaders: [
     {
       name: 'numbers1',
-      load: async (settings, request) => {
+      load: async (settings, request, log) => {
         const plugin = settings.plugin as PluginSettings
-  
+
+        log.info("Data loaded, returning")
+
         return {
           lastDate: new Date().toISOString(),
           mode: 'append',
@@ -39,8 +41,10 @@ export default createPlugin({
     },
     {
       name: 'numbers2',
-      load: async (settings, request) => {
+      load: async (settings, request, log) => {
         const plugin = settings.plugin as PluginSettings
+
+        log.warn("Credentials expiring soon")
   
         return {
           lastDate: new Date().toISOString(),
