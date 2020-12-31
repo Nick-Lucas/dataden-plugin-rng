@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "An example plugin, useful as a test plugin",
   "main": "dist/index.js",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "private": false,
   "scripts": {
-    "build": "rollup -c rollup.config.js --watch"
+    "build": "rollup -c rollup.config.js",
+    "dev": "yarn run build --watch"
   },
   "dependencies": {
     "@dataden/sdk": "^0.1.0",
