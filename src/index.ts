@@ -1,4 +1,5 @@
-import { createPlugin } from "@mydata/sdk";
+import { createPlugin } from "@dataden/sdk";
+import * as uuid from 'uuid'
 
 interface PluginSettings {
   instanceId: string
@@ -32,6 +33,7 @@ export default createPlugin({
             {
               uniqueId: Date.now,
               number: Math.trunc((Math.random() * 1000)),
+              randomUuid: uuid.v4(),
               instance: plugin.instanceId,
               loader: 1
             }
@@ -53,6 +55,7 @@ export default createPlugin({
             {
               uniqueId: Date.now,
               number: Math.trunc((Math.random() * 1000)),
+              randomUuid: uuid.v4(),
               instance: plugin.instanceId,
               loader: 2
             }
