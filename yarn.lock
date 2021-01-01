@@ -834,19 +834,10 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@dataden/build@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@dataden/build/-/build-0.1.0.tgz#b6961731d02769b6c053714462a085d0f21ba441"
-  integrity sha512-MhK5Ms2BCmFQvKlVO1gIJEYkBjBwzWJWyZVl79YBKLGB69q4UNlB5YwotaVjxGYKiapj/5tbB8gVLtYS6Kx0HA==
-  dependencies:
-    tslib "^2.0.3"
-
-"@dataden/sdk@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@dataden/sdk/-/sdk-0.1.0.tgz#72aa46854fddfec96f260014c029add0915527c8"
-  integrity sha512-eq8q1XTWAAYSOO43KHVgcsGb1Uw/o12PJ63zzPdujdz3WUmPjiXGyUFX3Fvlz8CLsTA/rUgZOeH6pwuPaQmODg==
-  dependencies:
-    "@dataden/build" "0.1.0"
+"@dataden/sdk@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@dataden/sdk/-/sdk-0.1.2.tgz#5b5b24cd26c57f8b82b6ebdf5c181278a1392836"
+  integrity sha512-Rn1kC8i5G3rpGWD9tmjjXkkwNeH2TQx0MXZwb6Gj85EJz4IoaRy/2FAUPsGjbJhDPiSJx47BblA0dY2PADlNRw==
 
 "@mdn/browser-compat-data@^2.0.5":
   version "2.0.6"
