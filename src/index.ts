@@ -6,7 +6,6 @@ interface PluginSettings {
 }
 
 export default createPlugin({
-  name: "random_number",
   getDefaultSettings: async () => {
     return {
       plugin: {

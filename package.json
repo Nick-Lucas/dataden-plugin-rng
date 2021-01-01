@@ -6,16 +6,12 @@
   "license": "GPL-3.0-only",
   "private": false,
   "scripts": {
-    "build": "rollup -c rollup.config.js",
-    "dev": "yarn run build --watch"
+    "build": "dataden-scripts build src/index.ts",
+    "dev": "dataden-scripts build src/index.ts --watch"
   },
   "dependencies": {
-    "@dataden/sdk": "^0.1.2",
-    "@rollup/plugin-commonjs": "^16.0.0",
-    "@wessberg/rollup-plugin-ts": "^1.3.8",
-    "rollup": "^2.33.2",
+    "@dataden/sdk": "0.2.1",
     "tslib": "^2.0.3",
-    "typescript": "^4.0.5",
     "uuid": "^8.3.2"
   }
 }
