@@ -1,0 +1,18 @@
+{
+  "name": "mydata-plugin-rng",
+  "version": "0.1.0",
+  "description": "An example plugin, useful as a test plugin",
+  "main": "dist/index.js",
+  "license": "GPL-3.0-only",
+  "private": false,
+  "scripts": {
+    "build": "dataden-scripts build src/index.ts",
+    "watch": "dataden-scripts build src/index.ts --watch",
+    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json --output ./outputs/data"
+  },
+  "dependencies": {
+    "@dataden/sdk": "^0.3.0",
+    "tslib": "^2.0.3",
+    "uuid": "^8.3.2"
+  }
+}
