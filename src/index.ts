@@ -29,7 +29,7 @@ export default createPlugin({
       name: 'numbers1',
       load: async (settings, request, log) => {
         const plugin = settings.plugin as PluginSettings
-
+        
         log.info("Data loaded, returning")
 
         return {
