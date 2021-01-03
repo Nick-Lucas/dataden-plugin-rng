@@ -11,7 +11,7 @@
     "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json --output ./outputs/data"
   },
   "dependencies": {
-    "@dataden/sdk": "0.2.1",
+    "@dataden/sdk": "^0.3.0",
     "tslib": "^2.0.3",
     "uuid": "^8.3.2"
   }
