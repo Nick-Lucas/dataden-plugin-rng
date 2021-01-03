@@ -10,7 +10,7 @@ interface PluginSecrets extends Record<string, string> {
 }
 
 export default createPlugin({
-  getDefaultSettings: async () => {
+  getDefaultSettings: async (): Promise<Settings<PluginSettings, PluginSecrets>> => {
     return {
       schedule: {
         every: 1,
@@ -18,10 +18,10 @@ export default createPlugin({
       },
       plugin: {
         instanceId: 'a'
-      } as PluginSettings,
+      } ,
       secrets: {
         testSecret: 'test-value'
-      } as PluginSecrets
+      } 
     }
   },
   loaders: [
