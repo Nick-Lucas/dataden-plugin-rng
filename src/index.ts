@@ -1,20 +1,27 @@
-import { createPlugin } from "@dataden/sdk";
+import { createPlugin, Settings } from "@dataden/sdk";
 import * as uuid from 'uuid'
 
 interface PluginSettings {
   instanceId: string
 }
 
+interface PluginSecrets extends Record<string, string> {
+  testSecret: string
+}
+
 export default createPlugin({
   getDefaultSettings: async () => {
     return {
-      plugin: {
-        instanceId: 'a'
-      } as PluginSettings,
       schedule: {
         every: 1,
         grain: 'minute'
-      }
+      },
+      plugin: {
+        instanceId: 'a'
+      } as PluginSettings,
+      secrets: {
+        testSecret: 'test-value'
+      } as PluginSecrets
     }
   },
   loaders: [
@@ -42,10 +49,14 @@ export default createPlugin({
     },
     {
       name: 'numbers2',
-      load: async (settings, request, log) => {
-        const plugin = settings.plugin as PluginSettings
+      load: async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
+        const plugin = settings.plugin
 
-        log.warn("Credentials expiring soon")
+        if (settings.secrets.testSecret) {
+          log.warn("Credentials expiring soon")
+        } else {
+          throw "Credentials not provided"
+        }
   
         return {
           lastDate: new Date().toISOString(),
