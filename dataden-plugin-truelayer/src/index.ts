@@ -1,6 +1,7 @@
-import { createPlugin, Settings, PluginAuth } from "@dataden/sdk";
-import * as uuid from 'uuid'
+import { createPlugin, Settings, PluginAuth, DataRow } from "@dataden/sdk";
+import _ from 'lodash'
 import axios from "axios";
+import { Account, getAccounts, getTransactions, Transaction } from "./api";
 
 interface PluginSettings {
   
@@ -11,9 +12,8 @@ interface PluginSecrets extends Record<string, string> {
   truelayerClientSecret: string
 }
 
-// const api = axios.create({
-//   baseURL: "https://auth.truelayer.com/connect/token"
-// })
+const TRUELAYER_AUTH_URI = "https://auth.truelayer.com/"
+const TRUELAYER_TOKEN_URI = "https://auth.truelayer.com/connect/token"
 
 interface Tokens {
   access_token: string
@@ -29,7 +29,7 @@ const exchangeForTokens = async (
     { grant_type: "refresh_token", refresh_token: string }
   ): Promise<Tokens> => {
   try {
-    const response = await axios.post("https://auth.truelayer.com/connect/token", {
+    const response = await axios.post(TRUELAYER_TOKEN_URI, {
       client_id: settings.secrets.truelayerClientId,
       client_secret: settings.secrets.truelayerClientSecret,
       ...receivedParams,
@@ -63,7 +63,7 @@ export default createPlugin({
     getAuthUri: async (settings: Settings<PluginSettings, PluginSecrets>, params) => {
       // TODO: what about reauthorization later?
       return axios.getUri({
-        url: "https://auth.truelayer.com/",
+        url: TRUELAYER_AUTH_URI,
         params: {
           response_type: "code",
           client_id: settings.secrets.truelayerClientId,
@@ -104,26 +104,85 @@ export default createPlugin({
 
   loaders: [
     {
+      name: 'accounts',
+      load:  async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
+        if (!settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
+          throw "Secrets not populated"
+        }
+
+        const tokens = (request.auth as unknown) as Tokens
+        if (!tokens?.access_token) {
+          throw "Auth credentials not provided"
+        }
+
+        const accounts = await getAccounts(tokens.access_token)
+        log.info(`Loaded ${accounts.results.length} accounts`)
+
+        return {
+          lastDate: new Date().toISOString(),
+          mode: 'append',
+          data: accounts.results.map(account => {
+            const result = account as DataRow & Account
+
+            result.uniqueId = account.account_id
+
+            return result
+          })
+        }
+      }
+    },
+    {
       name: 'transactions',
       load: async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
         if (!settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
           throw "Secrets not populated"
         }
 
-        log.info("Hello!")
-        
+        const tokens = (request.auth as unknown) as Tokens
+        if (!tokens?.access_token) {
+          throw "Auth credentials not provided"
+        }
+
+        const accounts = await getAccounts(tokens.access_token)
+        log.info(`Loaded ${accounts.results.length} accounts`)
+
+        const toDateISO = new Date().toISOString()
+
+        type AccountTransaction = Transaction & DataRow & { account_id: string }
+        let allTransactions: AccountTransaction[] = []
+        for (const account of accounts.results) {
+          console.log(`Account ${account.account_id} loading transactions`)
+
+          // TODO: batch this up into batches of 6 months and roll across accounts and backwards until 400 returned, then return
+          const transactions = await getTransactions(tokens.access_token, {
+            account,
+            fromDateISO: "2020-01-01T00:00:00Z", // request.lastSync.date,
+            toDateISO
+          })
+
+          console.log(`Account ${account.account_id} loaded ${transactions.results.length} transactions`)
+
+          allTransactions.push(...transactions.results.map(transaction => {
+            const result = transaction as AccountTransaction
+
+            result.uniqueId = result.transaction_id
+            result.account_id = account.account_id
+
+            return result
+          }))
+        }
+
+        allTransactions = _(allTransactions)
+          .sortBy(t => t.timestamp)
+          .reverse()
+          .value()
+
+        const lastDate = allTransactions[0] ? allTransactions[0].timestamp : request.lastSync.date
+
         return {
-          lastDate: new Date().toISOString(),
+          lastDate,
           mode: 'append',
-          data: [
-            // {
-            //   uniqueId: Date.now,
-            //   number: Math.trunc((Math.random() * 1000)),
-            //   randomUuid: uuid.v4(),
-            //   instance: plugin.instanceId,
-            //   loader: 1
-            // }
-          ]
+          data: allTransactions
         }
       }
     }
