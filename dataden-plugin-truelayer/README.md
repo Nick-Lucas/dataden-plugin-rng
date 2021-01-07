@@ -22,3 +22,7 @@ In order to use this plugin in your own DataDen, you will need to create an API 
     * Grab your "code" and take note of it for later
 
 ####
+
+
+<!-- TODO: add this stuff -->
+add redirect URI for {localhost:3000}/oauth2

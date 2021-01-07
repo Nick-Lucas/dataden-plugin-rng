@@ -25,7 +25,7 @@ interface Tokens {
 const exchangeForTokens = async (
   settings: Settings<PluginSettings, PluginSecrets>, 
   receivedParams: 
-    { grant_type: "authorization_code", code: string } | 
+    { grant_type: "authorization_code", code: string, redirect_uri: string } | 
     { grant_type: "refresh_token", refresh_token: string }
   ): Promise<Tokens> => {
   try {
@@ -33,7 +33,6 @@ const exchangeForTokens = async (
       client_id: settings.secrets.truelayerClientId,
       client_secret: settings.secrets.truelayerClientSecret,
       ...receivedParams,
-      redirect_uri: "https://console.truelayer.com/redirect-page",
     })
     
     return response.data as Tokens
@@ -64,22 +63,24 @@ export default createPlugin({
     getAuthUri: async (settings: Settings<PluginSettings, PluginSecrets>, params) => {
       // TODO: what about reauthorization later?
       return axios.getUri({
-        baseURL: "https://auth.truelayer.com/",
+        url: "https://auth.truelayer.com/",
         params: {
           response_type: "code",
           client_id: settings.secrets.truelayerClientId,
           redirect_uri: params.redirectUri,
           state: params.state,
+          scope: "info accounts balance cards transactions direct_debits standing_orders offline_access"
         }
       })
     },
     exchangeAuthorizationForAuthState: async (
       settings: Settings<PluginSettings, PluginSecrets>, 
-      receivedParams: { code: string }
+      receivedParams,
     ) => {
       return exchangeForTokens(settings, {
         grant_type: "authorization_code",
-        code: receivedParams.code
+        code: receivedParams.code,
+        redirect_uri: receivedParams.redirectUri
       })
     },
     updateAuthState: async (
@@ -105,9 +106,11 @@ export default createPlugin({
     {
       name: 'transactions',
       load: async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
-        if (!settings.secrets.bankCode || !settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
+        if (!settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
           throw "Secrets not populated"
         }
+
+        log.info("Hello!")
         
         return {
           lastDate: new Date().toISOString(),
