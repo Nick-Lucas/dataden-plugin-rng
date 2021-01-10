@@ -119,7 +119,6 @@ export default createPlugin({
         log.info(`Loaded ${accounts.results.length} accounts`)
 
         return {
-          lastDate: new Date().toISOString(),
           mode: 'append',
           data: accounts.results.map(account => {
             const result = account as DataRow & Account
@@ -127,7 +126,11 @@ export default createPlugin({
             result.uniqueId = account.account_id
 
             return result
-          })
+          }),
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          }
         }
       }
     },
@@ -177,12 +180,17 @@ export default createPlugin({
           .reverse()
           .value()
 
-        const lastDate = allTransactions[0] ? allTransactions[0].timestamp : request.lastSync.date
+        const lastDate = allTransactions[0] ? allTransactions[0].timestamp : request.lastSync.rehydrationData.lastDate
 
         return {
-          lastDate,
           mode: 'append',
-          data: allTransactions
+          data: allTransactions,
+          syncInfo: {
+            success: true,
+            rehydrationData: {
+              lastDate
+            }
+          }
         }
       }
     }
