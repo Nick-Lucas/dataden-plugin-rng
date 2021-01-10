@@ -33,11 +33,14 @@ export default createPlugin({
         log.info("Data loaded, returning")
 
         return {
-          lastDate: new Date().toISOString(),
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          },
           mode: 'append',
           data: [
             {
-              uniqueId: Date.now,
+              uniqueId: String(Date.now()),
               number: Math.trunc((Math.random() * 1000)),
               randomUuid: uuid.v4(),
               instance: plugin.instanceId,
@@ -59,11 +62,14 @@ export default createPlugin({
         }
   
         return {
-          lastDate: new Date().toISOString(),
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          },
           mode: 'append',
           data: [
             {
-              uniqueId: Date.now,
+              uniqueId: String(Date.now()),
               number: Math.trunc((Math.random() * 1000)),
               randomUuid: uuid.v4(),
               instance: plugin.instanceId,
