@@ -1,10 +1,12 @@
 import { createPlugin, Settings, PluginAuth, DataRow } from "@dataden/sdk";
 import _ from 'lodash'
 import axios from "axios";
+import { DateTime, Duration } from "luxon";
 import { Account, getAccounts, getTransactions, Transaction } from "./api";
 
 interface PluginSettings {
-  
+  backdateToISO: string
+  batchLengthMonths: number
 }
 
 interface PluginSecrets extends Record<string, string> {
@@ -49,7 +51,8 @@ export default createPlugin({
         grain: 'minute'
       },
       plugin: {
-        
+        backdateToISO: "2000-01-01T00:00:00Z",
+        batchLengthMonths: 2
       },
       secrets: {
         truelayerClientId: "",
@@ -146,33 +149,77 @@ export default createPlugin({
           throw "Auth credentials not provided"
         }
 
+        const toDateISO = new Date().toISOString()
+        let rehydrationData = request.lastSync.rehydrationData as RehydrationData
+        if (!rehydrationData || !rehydrationData.lastDate || !rehydrationData.pending) {
+          log.info("Defaulting rehydration data since it is blank")
+          rehydrationData = {
+            lastDate: settings.plugin.backdateToISO,
+            pending: generateBatches(
+              settings.plugin.backdateToISO, 
+              toDateISO, 
+              settings.plugin.batchLengthMonths)
+          }
+        } else {
+          const newBatches = generateBatches(
+            rehydrationData.lastDate, 
+            toDateISO,
+            settings.plugin.batchLengthMonths)
+
+          rehydrationData.pending.push(...newBatches)
+        }
+
         const accounts = await getAccounts(tokens.access_token)
         log.info(`Loaded ${accounts.results.length} accounts`)
 
-        const toDateISO = new Date().toISOString()
-
         type AccountTransaction = Transaction & DataRow & { account_id: string }
         let allTransactions: AccountTransaction[] = []
-        for (const account of accounts.results) {
-          console.log(`Account ${account.account_id} loading transactions`)
+        const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
+        while (remainingBatches.length > 0) {
+          const batch = remainingBatches.shift()
+          const batchId = batch.dateFromISO + "->" + batch.dateToISO
 
-          // TODO: batch this up into batches of 6 months and roll across accounts and backwards until 400 returned, then return
-          const transactions = await getTransactions(tokens.access_token, {
-            account,
-            fromDateISO: "2020-01-01T00:00:00Z", // request.lastSync.date,
-            toDateISO
-          })
+          log.info("Loading batch: " + batchId)
 
-          console.log(`Account ${account.account_id} loaded ${transactions.results.length} transactions`)
+          try {
+            const batchTransactions: Promise<AccountTransaction[]>[] = accounts.results.map(async account => {
+              log.info(`Account ${account.account_id} loading transactions in batch ${batchId}`)
+    
+              const transactions = await getTransactions(tokens.access_token, {
+                account,
+                fromDateISO: batch.dateFromISO,
+                toDateISO: batch.dateToISO,
+              })
+    
+              log.info(`Account ${account.account_id} loaded ${transactions.results.length} transactions`)
+    
+              return transactions.results.map(transaction => {
+                const result = transaction as AccountTransaction
+    
+                result.uniqueId = result.transaction_id
+                result.account_id = account.account_id
+    
+                return result
+              })
+            })
 
-          allTransactions.push(...transactions.results.map(transaction => {
-            const result = transaction as AccountTransaction
+  
+            allTransactions.push(...(
+              _.flatten(await Promise.all(batchTransactions))
+            ))
+          } catch(e) {
+            const failCount = batch.failCount + 1
 
-            result.uniqueId = result.transaction_id
-            result.account_id = account.account_id
+            log.error("Sync not fully complete, bailing with error: " + String(e) + " " + JSON.stringify(e?.response?.data ?? {}))
+            log.error(`This batch (${batchId}) has now failed ${failCount} times. You may need to reauthenticate, but if this continues then your bank might not support going back this far. For more info visit https://truelayer.zendesk.com/hc/en-us/articles/360025108713`)
 
-            return result
-          }))
+            rehydrationData.pending.unshift({
+              ...batch,
+              failCount
+            })
+
+            break
+          }
         }
 
         allTransactions = _(allTransactions)
@@ -180,7 +227,9 @@ export default createPlugin({
           .reverse()
           .value()
 
-        const lastDate = allTransactions[0] ? allTransactions[0].timestamp : request.lastSync.rehydrationData.lastDate
+        const lastDate = allTransactions[0] 
+          ? allTransactions[0].timestamp 
+          : rehydrationData.lastDate
 
         return {
           mode: 'append',
@@ -188,11 +237,48 @@ export default createPlugin({
           syncInfo: {
             success: true,
             rehydrationData: {
-              lastDate
-            }
+              lastDate,
+              pending: remainingBatches
+            } as RehydrationData
           }
         }
       }
     }
   ]
 })
+
+interface RehydrationData {
+  lastDate: string
+  pending: Batch[]
+}
+
+interface Batch {
+  dateFromISO: string
+  dateToISO: string
+  failCount: number
+}
+
+function generateBatches(fromDateISO: string, toDateISO: string, batchLengthMonths: number): Batch[] {
+  const batches: Batch[] = []
+
+  const grain = Duration.fromObject({
+    months: batchLengthMonths
+  })
+
+  let left = DateTime.fromISO(fromDateISO)
+  const toDate = DateTime.fromISO(toDateISO)
+
+  while (left.valueOf() < toDate.valueOf()) {
+    const right = DateTime.min(left.plus(grain), toDate)
+    
+    batches.push({
+      dateFromISO: left.toISO(),
+      dateToISO: right.toISO(),
+      failCount: 0
+    })
+
+    left = right
+  }
+
+  return batches
+}
