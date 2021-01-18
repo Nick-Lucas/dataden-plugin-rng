@@ -12,7 +12,7 @@
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
-    "@dataden/sdk": "^0.5.0",
+    "@dataden/sdk": "^0.6.0",
     "tslib": "^2.0.3",
     "uuid": "^8.3.2"
   }
