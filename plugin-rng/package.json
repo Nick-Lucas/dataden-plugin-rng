@@ -8,12 +8,15 @@
   "scripts": {
     "build": "dataden-scripts build src/index.ts",
     "watch": "dataden-scripts build src/index.ts --watch",
-    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json --output ./outputs/data",
+    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json",
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
     "@dataden/sdk": "^0.6.0",
     "tslib": "^2.0.3",
     "uuid": "^8.3.2"
-  }
+  },
+  "files": [
+    "dist/"
+  ]
 }
