@@ -1,0 +1,9 @@
+{
+  "plugin": {
+    "igAccountId": ""
+  },
+  "secrets": {
+    "igUsername": "",
+    "igPassword": ""
+  }
+}
