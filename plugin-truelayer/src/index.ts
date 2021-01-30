@@ -4,7 +4,7 @@ import axios from "axios";
 import { DateTime, Duration } from "luxon";
 import { Account, getAccounts, getTransactions, Transaction } from "./api";
 
-interface PluginSettings {
+interface PluginSettings extends Record<string, any> {
   backdateToISO: string
   batchLengthMonths: number
 }
@@ -13,6 +13,8 @@ interface PluginSecrets extends Record<string, string> {
   truelayerClientId: string
   truelayerClientSecret: string
 }
+
+type TruelayerPluginSettings = Settings<PluginSettings, PluginSecrets>
 
 const TRUELAYER_AUTH_URI = "https://auth.truelayer.com/"
 const TRUELAYER_TOKEN_URI = "https://auth.truelayer.com/connect/token"
@@ -25,7 +27,7 @@ interface Tokens {
 }
 
 const exchangeForTokens = async (
-  settings: Settings<PluginSettings, PluginSecrets>, 
+  settings: TruelayerPluginSettings, 
   receivedParams: 
     { grant_type: "authorization_code", code: string, redirect_uri: string } | 
     { grant_type: "refresh_token", refresh_token: string }
@@ -63,7 +65,7 @@ export default createPlugin({
 
   authMethod: {
     type: "oauth2_authorizationcode",
-    getAuthUri: async (settings: Settings<PluginSettings, PluginSecrets>, params) => {
+    getAuthUri: async (settings: TruelayerPluginSettings, params) => {
       // TODO: what about reauthorization later?
       return axios.getUri({
         url: TRUELAYER_AUTH_URI,
@@ -77,7 +79,7 @@ export default createPlugin({
       })
     },
     exchangeAuthorizationForAuthState: async (
-      settings: Settings<PluginSettings, PluginSecrets>, 
+      settings: TruelayerPluginSettings, 
       receivedParams,
     ) => {
       return exchangeForTokens(settings, {
@@ -87,7 +89,7 @@ export default createPlugin({
       })
     },
     updateAuthState: async (
-      settings: Settings<PluginSettings, PluginSecrets>, 
+      settings: TruelayerPluginSettings, 
       previousTokens: Tokens
     ) => {  
       try {
@@ -108,7 +110,8 @@ export default createPlugin({
   loaders: [
     {
       name: 'accounts',
-      load:  async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
+      load: async (_settings, request, log) => {
+        const settings = _settings as TruelayerPluginSettings
         if (!settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
           throw "Secrets not populated"
         }
@@ -139,7 +142,8 @@ export default createPlugin({
     },
     {
       name: 'transactions',
-      load: async (settings: Settings<PluginSettings, PluginSecrets>, request, log) => {
+      load: async (_settings, request, log) => {
+        const settings = _settings as TruelayerPluginSettings
         if (!settings.secrets.truelayerClientId || !settings.secrets.truelayerClientSecret) {
           throw "Secrets not populated"
         }
