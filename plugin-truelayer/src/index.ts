@@ -122,11 +122,11 @@ export default createPlugin({
         }
 
         const accounts = await getAccounts(tokens.access_token)
-        log.info(`Loaded ${accounts.results.length} accounts`)
+        log.info(`Loaded ${accounts.length} accounts`)
 
         return {
           mode: 'append',
-          data: accounts.results.map(account => {
+          data: accounts.map(account => {
             const result = account as DataRow & Account
 
             result.uniqueId = account.account_id
@@ -174,7 +174,7 @@ export default createPlugin({
         }
 
         const accounts = await getAccounts(tokens.access_token)
-        log.info(`Loaded ${accounts.results.length} accounts`)
+        log.info(`Loaded ${accounts.length} accounts`)
 
         type AccountTransaction = Transaction & DataRow & { account_id: string }
         let allTransactions: AccountTransaction[] = []
@@ -186,7 +186,7 @@ export default createPlugin({
           log.info("Loading batch: " + batchId)
 
           try {
-            const batchTransactions: Promise<AccountTransaction[]>[] = accounts.results.map(async account => {
+            const batchTransactions: Promise<AccountTransaction[]>[] = accounts.map(async account => {
               log.info(`Account ${account.account_id} loading transactions in batch ${batchId}`)
     
               const transactions = await getTransactions(tokens.access_token, {
@@ -195,9 +195,9 @@ export default createPlugin({
                 toDateISO: batch.dateToISO,
               })
     
-              log.info(`Account ${account.account_id} loaded ${transactions.results.length} transactions`)
+              log.info(`Account ${account.account_id} loaded ${transactions.length} transactions`)
     
-              return transactions.results.map(transaction => {
+              return transactions.map(transaction => {
                 const result = transaction as AccountTransaction
     
                 result.uniqueId = result.transaction_id

@@ -8,8 +8,8 @@ export interface Results<T> {
   results: T[]
 }
 
-export interface Account {
-  update_timestamp: string
+export interface Account<TDate = Date> {
+  update_timestamp: TDate
   account_id: string
   account_type: string
   display_name: string
@@ -25,15 +25,19 @@ export interface Account {
   }
 }
 
-export async function getAccounts(accessToken: string): Promise<Results<Account>> {
-  const response = await api.get<Results<Account>>("/v1/accounts", {
+export async function getAccounts(accessToken: string): Promise<Account[]> {
+  const response = await api.get<Results<Account<string>>>("/v1/accounts", {
     headers: {
       ...getHeaders(accessToken)
     },
     validateStatus: status => status === 200
   })
 
-  return response.data
+  return response.data.results.map(account => {
+    const converted = (account as unknown) as Account
+    converted.update_timestamp = new Date(account.update_timestamp)
+    return converted
+  })
 }
 
 export interface GetTransactions {
@@ -83,9 +87,9 @@ export type TransactionClassification =
   "Home" |
   "Pension and insurances"
 
-export interface Transaction {
+export interface Transaction<TDate = Date> {
   transaction_id: string
-  timestamp: string
+  timestamp: TDate
   description: string
   amount: number
   currency: string
@@ -101,8 +105,8 @@ export interface Transaction {
 }
 export async function getTransactions(
   accessToken: string, 
-  params: GetTransactions): Promise<Results<Transaction>> {
-  const response = await api.get<Results<Transaction>>(
+  params: GetTransactions): Promise<Transaction[]> {
+  const response = await api.get<Results<Transaction<string>>>(
     "/v1/accounts/" + 
       encodeURIComponent(params.account.account_id)
       + `/transactions`, 
@@ -117,7 +121,11 @@ export async function getTransactions(
       validateStatus: status => status === 200
     })
 
-  return response.data
+  return response.data.results.map(result => {
+    const converted = (result as unknown) as Transaction
+    converted.timestamp = new Date(result.timestamp)
+    return converted
+  })
 }
 
 
