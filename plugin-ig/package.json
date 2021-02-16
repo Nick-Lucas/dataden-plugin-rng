@@ -8,7 +8,7 @@
   "scripts": {
     "build": "dataden-scripts build src/index.ts",
     "watch": "dataden-scripts build src/index.ts --watch",
-    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json",
+    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json --output output/",
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {

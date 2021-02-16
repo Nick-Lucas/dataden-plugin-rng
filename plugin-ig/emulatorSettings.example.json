@@ -1,6 +1,7 @@
 {
   "plugin": {
-    "igAccountId": ""
+    "igAccountId": "",
+    "igApiUri": "https://api.ig.com"
   },
   "secrets": {
     "igUsername": "",
