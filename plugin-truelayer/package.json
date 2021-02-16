@@ -1,6 +1,6 @@
 {
   "name": "dataden-plugin-truelayer",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A truelayer Open Banking integration",
   "main": "dist/index.js",
   "license": "GPL-3.0-only",
