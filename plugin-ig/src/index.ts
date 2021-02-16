@@ -6,7 +6,7 @@ import { generateBatches } from "./generateBatches";
 
 import { getSession } from "./ig-auth";
 import { Transaction, loadTransactions } from "./transactions";
-import { loadTrades } from "./trades";
+import { Trade, loadTrades } from "./trades";
 
 
 export default createPlugin({
@@ -30,6 +30,28 @@ export default createPlugin({
   },
   loaders: [
     {
+      name: 'session_info',
+      load: async (_settings, request, log) => {
+        const settings = (_settings as unknown) as Settings
+
+        const session = await getSession(settings as Settings)
+
+        return {
+          mode: 'append',
+          data: [
+            {
+              uniqueId: 'session',
+              ...session.info
+            }
+          ],
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          }
+        }
+      }
+    },
+    {
       name: 'transactions',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
@@ -48,16 +70,11 @@ export default createPlugin({
           allTransactions.push(...transactions)
         }
 
-        rehydrationData.lastDate = _.last(allTransactions).dateUtc
+        rehydrationData.lastDate = _.last(allTransactions)?.dateUtc ?? new Date().toISOString()
 
         return {
           mode: 'append',
-          data: [
-            {
-              uniqueId: 'a',  
-              allTransactions
-            }
-          ],
+          data: allTransactions,
           syncInfo: {
             success: true,
             rehydrationData
@@ -74,27 +91,22 @@ export default createPlugin({
 
         let rehydrationData = calculateBatches(settings, request, log);
 
-        let allTransactions: any[] = []
+        let allTrades: Trade[] = []
         const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
         while (remainingBatches.length > 0) {
           const batch = remainingBatches.pop()
 
-          const transactions = await loadTransactions(settings, session, batch.dateFromISO, batch.dateToISO)
+          const trades = await loadTrades(settings, session, batch.dateFromISO, batch.dateToISO)
 
-          allTransactions.push(...transactions)
+          allTrades.push(...trades)
         }
 
         // TODO:
-        // rehydrationData.lastDate = _.last(allTransactions)
+        rehydrationData.lastDate = _.last(allTrades)?.tradeDate ?? new Date().toISOString()
 
         return {
           mode: 'append',
-          data: [
-            {
-              uniqueId: 'a',  
-              allTransactions
-            }
-          ],
+          data: allTrades,
           syncInfo: {
             success: true,
             rehydrationData

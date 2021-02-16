@@ -1,93 +1,76 @@
 import axios from 'axios'
+import { DataRow } from "@dataden/sdk";
+
 import { SessionResult } from "./ig-auth";
 import { Settings } from "./types";
 import { DateTime } from "luxon";
 
 const dateFormat = "dd-MM-yyyy"
 
-type Summary =
-  'Cash In' // from bank
-  | 'Cash Out' // to bank
-  | 'Client Consideration' // sold
-  | 'Closing trades' // sold
-  | 'Share Dealing Commissions' // fee
-  | 'SDRT' // stamp duty tax/fee
-  | 'Dividend' // dividend received
-  | 'Dividends Paid' // dividend corrections/fees
-  | 'Exchange Fees' // fee
-  | 'PTM Levy' // fee
-  | 'CFD funding Interest Paid' // fee
-  | 'Stock Borrowing Costs' // fee
-  | 'Inter Account Transfers' // internal
-
-const SUMMARY_BANK: Summary[] = ['Cash In', 'Cash Out']
-const SUMMARY_CLOSED: Summary[] = [
-  'Client Consideration',
-  'Closing trades'
-]
-const SUMMARY_FEES: Summary[] = [
-  'Share Dealing Commissions', 
-  'SDRT', 
-  'Dividend', 
-  'Dividends Paid', 
-  'Exchange Fees', 
-  'PTM Levy', 
-  'CFD funding Interest Paid', 
-  'Stock Borrowing Costs'
-]
-
-interface SummaryFlags {
-  isBankTransfer: boolean
-  isClosingTrade: boolean
-  isFee: boolean
-}
-function getSummaryFlags(summary: Summary): SummaryFlags {
-  return {
-    isBankTransfer: SUMMARY_BANK.includes(summary),
-    isClosingTrade: SUMMARY_CLOSED.includes(summary),
-    isFee: SUMMARY_FEES.includes(summary),
-  }
+export interface Pagination {
+  page: number;
+  recordsPerPage: number;
+  pageCount: number;
+  totalRecordCount: number;
 }
 
-export interface IGTransaction {
-  date: string
-  summary: Summary
-  marketName: string
-  period: string
-  profitAndLoss: string
-  transactionType: string
-  reference: string
-  openLevel: string
-  closeLevel: string
-  size: string
-  currency: string
-  plAmount: string
-  cashTransaction: boolean
-  dateUtc: string
-  openDateUtc: string
-  currencyIsoCode?: any
+export interface Amount {
+  value: number;
+  currency: string;
+  amountType: string;
+  transactionToBaseCcyRate?: any;
 }
 
-export type Transaction = IGTransaction & { 
-  summaryFlags: SummaryFlags 
+export interface IGTrade {
+  accountId: string;
+  convertOnCloseRate: string;
+  currency: string;
+  direction: string;
+  entryType: string;
+  epic: string;
+  formalInstrumentName: string;
+  instrumentDesc: string;
+  narrative: string;
+  orderID: string;
+  orderSize: string;
+  orderType: string;
+  price: string;
+  scaledSize: string;
+  settlementDate: string;
+  settlementStatus: string;
+  summaryCode: string;
+  summaryCodeDescription: string;
+  amounts: Amount[];
+  tradeDate: string;
+  tradeTime: string;
+  tradeValue: string;
+  venue: string;
+  tradeType: string;
+}
+
+
+export type Trade = IGTrade & DataRow & { 
   accountId: string
 }
 
-export interface IGTransactionsResponse {
-  transactions: IGTransaction[],
-  pageData: {
-    pageSize: number
-    pageNumber: number
-    totalCount: number
-    numberPages: number
-  }
+export interface IGLedgerHistoryResponse {
+  success: boolean;
+  payload: {
+    accountID: string;
+    startDate: string;
+    endDate: string;
+    pagination: Pagination;
+    txnHistory: Trade[];
+};
+  error?: any;
 }
 
-export async function loadTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string): Promise<any[]> {
+export async function loadTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
   const http = axios.create({
     headers: {
       'Content-Type': 'application/json',
       'CST': session.cst,
+      'X-SECURITY-TOKEN': session.xSecurityToken,
       'Origin': 'https://www.ig.com'
     },
     baseURL: settings.plugin.igApiUri
@@ -98,27 +81,27 @@ export async function loadTrades(settings: Settings, session: SessionResult, sta
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
 
-  const result = await http.get(
+  const result = await http.get<IGLedgerHistoryResponse>(
    `/deal/ledgerhistory/list?startDate=${dateFrom}&endDate=${dateTo}&pageNumber=1&recordsPerPage=10000000`,
     {
       headers: {
         'Version': 1,
         'IG-Account-ID': accountId,
+        'ig-account-id': accountId,
       },
       validateStatus: status => status === 200
     }
   )
 
   // TODO: validate pages in case a second page exists
+  
+  return result.data.payload.txnHistory.map(_t => {
+    const t = _t as Trade
 
-  return result.data
+    t.uniqueId = t.orderID
+    t.accountId = accountId
 
-  // return result.data.transactions.map(_t => {
-  //   const t = _t as Transaction
-
-  //   t.summaryFlags = getSummaryFlags(t.summary)
-  //   t.accountId = accountId
-
-  //   return t
-  // })
+    return t
+  })
 }
+

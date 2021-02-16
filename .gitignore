@@ -5,3 +5,4 @@ outputs/
 .authcache.json
 emulatorSettings.json
 output*json
+.todo

@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { DataRow } from "@dataden/sdk";
+
 import { SessionResult } from "./ig-auth";
 import { Settings } from "./types";
 import { DateTime } from "luxon";
@@ -68,7 +70,7 @@ export interface IGTransaction {
   currencyIsoCode?: any
 }
 
-export type Transaction = IGTransaction & { 
+export type Transaction = IGTransaction & DataRow & { 
   summaryFlags: SummaryFlags 
   accountId: string
 }
@@ -88,6 +90,7 @@ export async function loadTransactions(settings: Settings, session: SessionResul
     headers: {
       'Content-Type': 'application/json',
       'CST': session.cst,
+      'X-SECURITY-TOKEN': session.xSecurityToken,
       'Origin': 'https://www.ig.com'
     },
     baseURL: settings.plugin.igApiUri
@@ -104,6 +107,7 @@ export async function loadTransactions(settings: Settings, session: SessionResul
       headers: {
         'Version': 1,
         'IG-Account-ID': accountId,
+        'ig-account-id': accountId,
       },
       validateStatus: status => status === 200
     }
@@ -114,6 +118,7 @@ export async function loadTransactions(settings: Settings, session: SessionResul
   return result.data.transactions.map(_t => {
     const t = _t as Transaction
 
+    t.uniqueId = t.reference
     t.summaryFlags = getSummaryFlags(t.summary)
     t.accountId = accountId
 

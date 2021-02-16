@@ -86,6 +86,7 @@ export interface SessionInfo {
 export interface SessionResult {
   info: SessionInfo
   cst: string
+  xSecurityToken: string
 }
 
 export async function getSession(settings: Settings): Promise<SessionResult> {
@@ -96,27 +97,30 @@ export async function getSession(settings: Settings): Promise<SessionResult> {
       enc: false
     }, {
       baseURL: settings.plugin.igApiUri,
-      validateStatus: status => status == 200
+      validateStatus: status => status == 200,
+      headers: {
+        'IG-Account-ID': settings.plugin.igAccountId,
+        'ig-account-id': settings.plugin.igAccountId,
+      }
     })
 
     const sessionInfo = result.data
-  
+
+    // await axios.post<SessionInfo>("/clientsecurity/session", {
+    //   username: settings.secrets.igUsername,
+    //   password: settings.secrets.igPassword,
+    //   enc: false
+    // }, {
+    //   baseURL: settings.plugin.igApiUri,
+    //   validateStatus: status => status == 200
+    // })
+    
     return {
       info: sessionInfo,
-      cst: result.headers.cst
+      cst: result.headers.cst,
+      xSecurityToken: result.headers['x-security-token']
     }
   } catch (e) {
     throw e.response
   }
 }
-
-// async function getTransactions({CST}) {
-//   return axios.get("/deal/v2/history/transactions/2592000000/fromcodes?pageNumber=1&pageSize=10&codes=ALL",
-//   {
-//     baseURL: baseUri,
-//     headers: {
-//       CST: CST,
-//       'IG-Account-ID': process.env.AC
-//     }
-//   })  
-// }
