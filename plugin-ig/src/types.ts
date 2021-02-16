@@ -1,8 +1,11 @@
 import { Settings as SdkSettings } from "@dataden/sdk";
+import { Batch } from "./generateBatches";
 
 export interface PluginSettings {
   igApiUri: string
   igAccountId: string
+  backdateToISO: string
+  batchLengthMonths: number
 }
 
 export interface PluginSecrets {
@@ -11,3 +14,8 @@ export interface PluginSecrets {
 }
 
 export type Settings = SdkSettings<PluginSettings, PluginSecrets>
+
+export interface RehydrationData {
+  lastDate: string
+  pending: Batch[]
+}
