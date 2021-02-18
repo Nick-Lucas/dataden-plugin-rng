@@ -130,9 +130,11 @@ export async function loadTransactions(settings: Settings, session: SessionResul
       plAmount: float(t.plAmount),
       profitAndLoss: float(t.profitAndLoss),
       size: float(t.profitAndLoss),
-      date: date(t.date, "dd/MM/yyyy"),
+      date: date(t.date, "dd/MM/yy"),
       dateUtc: date(t.dateUtc),
       openDateUtc: date(t.openDateUtc),
+
+      rawTransaction: t
     }
 
     return transaction

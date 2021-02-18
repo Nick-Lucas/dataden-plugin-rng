@@ -113,7 +113,9 @@ export async function loadTrades(settings: Settings, session: SessionResult, sta
       settlementDate: date(t.settlementDate, "dd/MM/yyyy"),
       tradeDate: date(t.tradeDate, "dd/MM/yyyy"),
       tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
-      tradeValue: float(t.tradeValue)
+      tradeValue: float(t.tradeValue),
+
+      rawTrade: t
     }
 
     return trade
