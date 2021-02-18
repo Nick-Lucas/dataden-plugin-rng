@@ -34,14 +34,14 @@ export default createPlugin({
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
-        const session = await getSession(settings as Settings)
+        const session = await getSession(settings as Settings, log)
 
         return {
           mode: 'append',
           data: [
             {
               uniqueId: 'session',
-              ...session.info
+              ...session
             }
           ],
           syncInfo: {
@@ -56,7 +56,7 @@ export default createPlugin({
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
-        const session = await getSession(settings as Settings)
+        const session = await getSession(settings as Settings, log)
 
         let rehydrationData = calculateBatches(settings, request, log);
 
@@ -87,7 +87,7 @@ export default createPlugin({
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
-        const session = await getSession(settings as Settings)
+        const session = await getSession(settings as Settings, log)
 
         let rehydrationData = calculateBatches(settings, request, log);
 

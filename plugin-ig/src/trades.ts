@@ -1,51 +1,51 @@
 import axios from 'axios'
-import { DataRow } from "@dataden/sdk";
+import { DataRow } from "@dataden/sdk"
 
-import { SessionResult } from "./ig-auth";
-import { Settings } from "./types";
-import { DateTime } from "luxon";
+import { SessionResult } from "./ig-auth"
+import { Settings } from "./types"
+import { DateTime } from "luxon"
 
 const dateFormat = "dd-MM-yyyy"
 
 export interface Pagination {
-  page: number;
-  recordsPerPage: number;
-  pageCount: number;
-  totalRecordCount: number;
+  page: number
+  recordsPerPage: number
+  pageCount: number
+  totalRecordCount: number
 }
 
 export interface Amount {
-  value: number;
-  currency: string;
-  amountType: string;
-  transactionToBaseCcyRate?: any;
+  value: number
+  currency: string
+  amountType: string
+  transactionToBaseCcyRate?: any
 }
 
 export interface IGTrade {
-  accountId: string;
-  convertOnCloseRate: string;
-  currency: string;
-  direction: string;
-  entryType: string;
-  epic: string;
-  formalInstrumentName: string;
-  instrumentDesc: string;
-  narrative: string;
-  orderID: string;
-  orderSize: string;
-  orderType: string;
-  price: string;
-  scaledSize: string;
-  settlementDate: string;
-  settlementStatus: string;
-  summaryCode: string;
-  summaryCodeDescription: string;
-  amounts: Amount[];
-  tradeDate: string;
-  tradeTime: string;
-  tradeValue: string;
-  venue: string;
-  tradeType: string;
+  accountId: string
+  convertOnCloseRate: string
+  currency: string
+  direction: string
+  entryType: string
+  epic: string
+  formalInstrumentName: string
+  instrumentDesc: string
+  narrative: string
+  orderID: string
+  orderSize: string
+  orderType: string
+  price: string
+  scaledSize: string
+  settlementDate: string
+  settlementStatus: string
+  summaryCode: string
+  summaryCodeDescription: string
+  amounts: Amount[]
+  tradeDate: string
+  tradeTime: string
+  tradeValue: string
+  venue: string
+  tradeType: string
 }
 
 
@@ -54,15 +54,15 @@ export type Trade = IGTrade & DataRow & {
 }
 
 export interface IGLedgerHistoryResponse {
-  success: boolean;
+  success: boolean
   payload: {
-    accountID: string;
-    startDate: string;
-    endDate: string;
-    pagination: Pagination;
-    txnHistory: Trade[];
-};
-  error?: any;
+    accountID: string
+    startDate: string
+    endDate: string
+    pagination: Pagination
+    txnHistory: Trade[]
+  }
+  error?: any
 }
 
 export async function loadTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
@@ -76,7 +76,7 @@ export async function loadTrades(settings: Settings, session: SessionResult, sta
     baseURL: settings.plugin.igApiUri
   })
 
-  const accountId = session.info.currentAccountId
+  const accountId = session.accountId
 
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)

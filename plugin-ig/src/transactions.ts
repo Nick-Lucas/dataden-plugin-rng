@@ -1,9 +1,9 @@
 import axios from 'axios'
-import { DataRow } from "@dataden/sdk";
+import { DataRow } from "@dataden/sdk"
 
-import { SessionResult } from "./ig-auth";
-import { Settings } from "./types";
-import { DateTime } from "luxon";
+import { SessionResult } from "./ig-auth"
+import { Settings } from "./types"
+import { DateTime } from "luxon"
 
 const dateFormat = "dd-MM-yyyy"
 
@@ -96,7 +96,7 @@ export async function loadTransactions(settings: Settings, session: SessionResul
     baseURL: settings.plugin.igApiUri
   })
 
-  const accountId = session.info.currentAccountId
+  const accountId = session.accountId
 
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
@@ -107,7 +107,6 @@ export async function loadTransactions(settings: Settings, session: SessionResul
       headers: {
         'Version': 1,
         'IG-Account-ID': accountId,
-        'ig-account-id': accountId,
       },
       validateStatus: status => status === 200
     }
