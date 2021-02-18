@@ -4,6 +4,7 @@ import { DataRow } from "@dataden/sdk"
 import { SessionResult } from "./ig-auth"
 import { Settings } from "./types"
 import { DateTime } from "luxon"
+import { date, dateFromComponents, float } from "./converters";
 
 const dateFormat = "dd-MM-yyyy"
 
@@ -21,9 +22,9 @@ export interface Amount {
   transactionToBaseCcyRate?: any
 }
 
-export interface IGTrade {
+export interface IGTrade<TDate=string, TNumber=string> {
   accountId: string
-  convertOnCloseRate: string
+  convertOnCloseRate: TNumber
   currency: string
   direction: string
   entryType: string
@@ -32,24 +33,25 @@ export interface IGTrade {
   instrumentDesc: string
   narrative: string
   orderID: string
-  orderSize: string
+  orderSize: TNumber
   orderType: string
-  price: string
-  scaledSize: string
-  settlementDate: string
+  price: TNumber
+  scaledSize: TNumber
+  settlementDate: TDate
   settlementStatus: string
   summaryCode: string
   summaryCodeDescription: string
   amounts: Amount[]
-  tradeDate: string
+  tradeDate: TDate
   tradeTime: string
-  tradeValue: string
+  tradeDateTime: TDate
+  tradeValue: TNumber
   venue: string
   tradeType: string
 }
 
 
-export type Trade = IGTrade & DataRow & { 
+export type Trade = IGTrade<Date, number> & DataRow & { 
   accountId: string
 }
 
@@ -60,7 +62,7 @@ export interface IGLedgerHistoryResponse {
     startDate: string
     endDate: string
     pagination: Pagination
-    txnHistory: Trade[]
+    txnHistory: IGTrade[]
   }
   error?: any
 }
@@ -95,13 +97,25 @@ export async function loadTrades(settings: Settings, session: SessionResult, sta
 
   // TODO: validate pages in case a second page exists
   
-  return result.data.payload.txnHistory.map(_t => {
-    const t = _t as Trade
+  return result.data.payload.txnHistory.map(t => {
+    const trade: Trade = {
+      ...t,
 
-    t.uniqueId = t.orderID
-    t.accountId = accountId
+      // extra fields
+      uniqueId: t.orderID,
+      accountId: accountId,
 
-    return t
+      // Conversions
+      convertOnCloseRate: float(t.convertOnCloseRate),
+      orderSize: float(t.orderSize),
+      price: float(t.price),
+      scaledSize: float(t.scaledSize),
+      settlementDate: date(t.settlementDate, "dd/MM/yyyy"),
+      tradeDate: date(t.tradeDate, "dd/MM/yyyy"),
+      tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
+      tradeValue: float(t.tradeValue)
+    }
+
+    return trade
   })
 }
-

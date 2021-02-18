@@ -70,7 +70,7 @@ export default createPlugin({
           allTransactions.push(...transactions)
         }
 
-        rehydrationData.lastDate = _.last(allTransactions)?.dateUtc ?? new Date().toISOString()
+        rehydrationData.lastDate = (_.last(allTransactions)?.dateUtc ?? new Date()).toISOString()
 
         return {
           mode: 'append',
@@ -101,8 +101,7 @@ export default createPlugin({
           allTrades.push(...trades)
         }
 
-        // TODO:
-        rehydrationData.lastDate = _.last(allTrades)?.tradeDate ?? new Date().toISOString()
+        rehydrationData.lastDate = (_.last(allTrades)?.tradeDate ?? new Date()).toISOString()
 
         return {
           mode: 'append',

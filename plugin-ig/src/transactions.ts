@@ -4,6 +4,7 @@ import { DataRow } from "@dataden/sdk"
 import { SessionResult } from "./ig-auth"
 import { Settings } from "./types"
 import { DateTime } from "luxon"
+import { date, float } from "./converters";
 
 const dateFormat = "dd-MM-yyyy"
 
@@ -51,32 +52,32 @@ function getSummaryFlags(summary: Summary): SummaryFlags {
   }
 }
 
-export interface IGTransaction {
-  date: string
+export interface IGTransaction<TDate=string, TNumber=string> {
+  date: TDate
   summary: Summary
   marketName: string
   period: string
-  profitAndLoss: string
+  profitAndLoss: TNumber
   transactionType: string
   reference: string
-  openLevel: string
-  closeLevel: string
-  size: string
+  openLevel: TNumber
+  closeLevel: TNumber
+  size: TNumber
   currency: string
-  plAmount: string
+  plAmount: TNumber
   cashTransaction: boolean
-  dateUtc: string
-  openDateUtc: string
-  currencyIsoCode?: any
+  dateUtc: TDate
+  openDateUtc: TDate
+  currencyIsoCode?: string
 }
 
-export type Transaction = IGTransaction & DataRow & { 
+export type Transaction = IGTransaction<Date, number> & DataRow & { 
   summaryFlags: SummaryFlags 
   accountId: string
 }
 
 export interface IGTransactionsResponse {
-  transactions: IGTransaction[],
+  transactions: IGTransaction<string, string>[],
   pageData: {
     pageSize: number
     pageNumber: number
@@ -114,13 +115,26 @@ export async function loadTransactions(settings: Settings, session: SessionResul
 
   // TODO: validate pages in case a second page exists
 
-  return result.data.transactions.map(_t => {
-    const t = _t as Transaction
+  return result.data.transactions.map(t => {
+    const transaction: Transaction = {
+      ...t,
 
-    t.uniqueId = t.reference
-    t.summaryFlags = getSummaryFlags(t.summary)
-    t.accountId = accountId
+      // new fields
+      uniqueId: t.reference,
+      summaryFlags: getSummaryFlags(t.summary),
+      accountId: accountId,
 
-    return t
+      // conversions
+      closeLevel: float(t.closeLevel),
+      openLevel: float(t.openLevel),
+      plAmount: float(t.plAmount),
+      profitAndLoss: float(t.profitAndLoss),
+      size: float(t.profitAndLoss),
+      date: date(t.date, "dd/MM/yyyy"),
+      dateUtc: date(t.dateUtc),
+      openDateUtc: date(t.openDateUtc),
+    }
+
+    return transaction
   })
 }
