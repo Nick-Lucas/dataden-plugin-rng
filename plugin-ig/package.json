@@ -1,6 +1,6 @@
 {
-  "name": "dataden-plugin-rng",
-  "version": "0.1.1",
+  "name": "dataden-plugin-ig",
+  "version": "0.1.0",
   "description": "An example plugin, useful as a test plugin",
   "main": "dist/index.js",
   "license": "GPL-3.0-only",
