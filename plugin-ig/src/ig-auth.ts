@@ -104,6 +104,7 @@ function getAccountType(code: IGProductCode): AccountType {
 
 export interface AccountResult {
   accountId: string
+  name: string
   type: AccountType
   cst: string
   xSecurityToken: string
@@ -168,6 +169,7 @@ export async function getSession(settings: Settings, log: SdkLogger): Promise<Se
 
       accounts.push({
         accountId,
+        name: account.accountName,
         type,
         cst: tokens.cst,
         xSecurityToken: tokens["x-security-token"]

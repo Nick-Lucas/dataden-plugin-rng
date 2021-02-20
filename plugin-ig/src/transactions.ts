@@ -8,7 +8,7 @@ import { date, float } from "./converters";
 
 const dateFormat = "dd-MM-yyyy"
 
-type Summary =
+export type Summary =
   'Cash In' // from bank
   | 'Cash Out' // to bank
   | 'Client Consideration' // sold
@@ -86,7 +86,7 @@ export interface IGTransactionsResponse {
   }
 }
 
-export async function loadTransactions(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string): Promise<Transaction[]> {
+export async function loadTransactions(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string, codes: "ALL"| "DEPOSIT,WITHDRAWAL" = "ALL"): Promise<Transaction[]> {
   const http = axios.create({
     headers: {
       'Content-Type': 'application/json',
@@ -96,14 +96,19 @@ export async function loadTransactions(settings: Settings, account: AccountResul
     },
     baseURL: settings.plugin.igApiUri
   })
-
+  
   const accountId = account.accountId
 
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
 
+  let codeNum = "ALL"
+  if (codes === "DEPOSIT,WITHDRAWAL") {
+    codeNum = "20001,20002"
+  }
+
   const result = await http.get<IGTransactionsResponse>(
-    `/deal/v2/history/transactions/${dateFrom}/${dateTo}/fromcodes?pageSize=10000000&pageNumber=1&codes=ALL`,
+    `/deal/v2/history/transactions/${dateFrom}/${dateTo}/fromcodes?pageSize=10000000&pageNumber=1&codes=${encodeURIComponent(codeNum)}`,
     {
       headers: {
         'Version': 1,

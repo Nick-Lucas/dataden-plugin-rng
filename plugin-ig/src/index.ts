@@ -5,8 +5,10 @@ import { Settings, RehydrationData } from "./types";
 import { generateBatches } from "./generateBatches";
 
 import { getSession } from "./ig-auth";
-// import { Transaction, loadTransactions } from "./transactions";
+import { Transaction, loadTransactions } from "./transactions";
 // import { Trade, loadTrades } from "./trades";
+
+import { loadFunding } from "./loadFunding";
 
 
 export default createPlugin({
@@ -43,6 +45,25 @@ export default createPlugin({
               ...session
             }
           ],
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          }
+        }
+      }
+    },
+    {
+      name: 'funding',
+      load: async (_settings, request, log) => {
+        const settings = (_settings as unknown) as Settings
+
+        const session = await getSession(settings as Settings, log)
+
+        const funding = await loadFunding(settings, session, log)
+
+        return {
+          mode: 'append',
+          data: funding,
           syncInfo: {
             success: true,
             rehydrationData: {}
