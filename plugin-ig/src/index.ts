@@ -10,6 +10,7 @@ import { Transaction, loadTransactions } from "./api/transactions";
 
 import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
+import { loadStockTrades } from "./loaders/loadStockTrades";
 
 
 export default createPlugin({
@@ -67,6 +68,25 @@ export default createPlugin({
         return {
           mode: 'append',
           data: funding,
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          }
+        }
+      }
+    },
+    {
+      name: 'trades',
+      load: async (_settings, request, log) => {
+        const settings = (_settings as unknown) as Settings
+
+        const session = await getSession(settings as Settings, log)
+
+        const trades = await loadStockTrades(settings, session, log)
+
+        return {
+          mode: 'append',
+          data: trades,
           syncInfo: {
             success: true,
             rehydrationData: {}

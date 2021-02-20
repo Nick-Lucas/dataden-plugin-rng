@@ -33,3 +33,7 @@ export function dateFromComponents(dateValue: string, timeValue: string, format=
                  .set({ hour, minute, second })
                  .toJSDate()
 }
+
+export function round(val) {
+  return Math.round(val * 100) / 100
+}

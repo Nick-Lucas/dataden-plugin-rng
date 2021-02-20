@@ -3,7 +3,6 @@ import { Batch } from "./generateBatches";
 
 export interface PluginSettings {
   igApiUri: string
-  igAccountId: string
   backdateToISO: string
   batchLengthMonths: number
 }
