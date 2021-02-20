@@ -5,8 +5,8 @@ import { Settings, RehydrationData } from "./types";
 import { generateBatches } from "./generateBatches";
 
 import { getSession } from "./ig-auth";
-import { Transaction, loadTransactions } from "./transactions";
-import { Trade, loadTrades } from "./trades";
+// import { Transaction, loadTransactions } from "./transactions";
+// import { Trade, loadTrades } from "./trades";
 
 
 export default createPlugin({
@@ -14,7 +14,6 @@ export default createPlugin({
     return ({
       plugin: {
         igApiUri: 'https://api.ig.com',
-        igAccountId: "",
         backdateToISO: "2000-01-01T00:00:00Z",
         batchLengthMonths: 2
       },
@@ -51,68 +50,68 @@ export default createPlugin({
         }
       }
     },
-    {
-      name: 'transactions',
-      load: async (_settings, request, log) => {
-        const settings = (_settings as unknown) as Settings
+    // {
+    //   name: 'transactions',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
 
-        const session = await getSession(settings as Settings, log)
+    //     const session = await getSession(settings as Settings, log)
 
-        let rehydrationData = calculateBatches(settings, request, log);
+    //     let rehydrationData = calculateBatches(settings, request, log);
 
-        let allTransactions: Transaction[] = []
-        const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
-        while (remainingBatches.length > 0) {
-          const batch = remainingBatches.pop()
+    //     let allTransactions: Transaction[] = []
+    //     const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
+    //     while (remainingBatches.length > 0) {
+    //       const batch = remainingBatches.pop()
 
-          const transactions = await loadTransactions(settings, session, batch.dateFromISO, batch.dateToISO)
+    //       const transactions = await loadTransactions(settings, session, batch.dateFromISO, batch.dateToISO)
 
-          allTransactions.push(...transactions)
-        }
+    //       allTransactions.push(...transactions)
+    //     }
 
-        rehydrationData.lastDate = (_.last(allTransactions)?.dateUtc ?? new Date()).toISOString()
+    //     rehydrationData.lastDate = (_.last(allTransactions)?.dateUtc ?? new Date()).toISOString()
 
-        return {
-          mode: 'append',
-          data: allTransactions,
-          syncInfo: {
-            success: true,
-            rehydrationData
-          }
-        }
-      }
-    },
-    {
-      name: 'trades',
-      load: async (_settings, request, log) => {
-        const settings = (_settings as unknown) as Settings
+    //     return {
+    //       mode: 'append',
+    //       data: allTransactions,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData
+    //       }
+    //     }
+    //   }
+    // },
+    // {
+    //   name: 'trades',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
 
-        const session = await getSession(settings as Settings, log)
+    //     const session = await getSession(settings as Settings, log)
 
-        let rehydrationData = calculateBatches(settings, request, log);
+    //     let rehydrationData = calculateBatches(settings, request, log);
 
-        let allTrades: Trade[] = []
-        const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
-        while (remainingBatches.length > 0) {
-          const batch = remainingBatches.pop()
+    //     let allTrades: Trade[] = []
+    //     const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
+    //     while (remainingBatches.length > 0) {
+    //       const batch = remainingBatches.pop()
 
-          const trades = await loadTrades(settings, session, batch.dateFromISO, batch.dateToISO)
+    //       const trades = await loadTrades(settings, session, batch.dateFromISO, batch.dateToISO)
 
-          allTrades.push(...trades)
-        }
+    //       allTrades.push(...trades)
+    //     }
 
-        rehydrationData.lastDate = (_.last(allTrades)?.tradeDate ?? new Date()).toISOString()
+    //     rehydrationData.lastDate = (_.last(allTrades)?.tradeDate ?? new Date()).toISOString()
 
-        return {
-          mode: 'append',
-          data: allTrades,
-          syncInfo: {
-            success: true,
-            rehydrationData
-          }
-        }
-      }
-    }
+    //     return {
+    //       mode: 'append',
+    //       data: allTrades,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData
+    //       }
+    //     }
+    //   }
+    // }
   ]
 })
 

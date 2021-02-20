@@ -2,6 +2,8 @@ import { pluginInstanceIsValid, SdkLogger } from "@dataden/sdk";
 import axios from "axios";
 import { Settings } from "./types";
 
+type IGProductCode = "IGISA" | "IGSTK" | "IGFSB" | "IGCFD" | '_other_'
+
 export interface Account {
     accountId: string
     accountName: string
@@ -13,7 +15,7 @@ export interface Account {
     labels: any[]
     canSwitchTo: boolean
     fundsTransferRestrictionType: string
-    productCode: string
+    productCode: IGProductCode
 }
 
 export interface FundsBreakDown {
@@ -84,11 +86,31 @@ export interface SessionInfo {
     paycassoEnabled: boolean
 }
 
-export interface SessionResult {
-  info: SessionInfo
+export type AccountType = "stocks" | "spreadbet" | "cfd" | "unsupported"
+function getAccountType(code: IGProductCode): AccountType {
+  switch (code) {
+    case "IGISA": 
+      return "stocks"
+    case "IGSTK":
+      return "stocks"
+    case "IGFSB":
+      return "spreadbet"
+    case "IGCFD":
+      return "cfd"
+    default:
+      return 'unsupported'
+  }
+}
+
+export interface AccountResult {
   accountId: string
+  type: AccountType
   cst: string
   xSecurityToken: string
+}
+export interface SessionResult {
+  info: SessionInfo
+  accounts: AccountResult[]
 }
 
 export interface TokenHeaders {
@@ -98,58 +120,65 @@ export interface TokenHeaders {
 
 export async function getSession(settings: Settings, log: SdkLogger): Promise<SessionResult> {
   try {
-    log.info(`Signing in as account: ${settings.plugin.igAccountId}`)
+    log.info(`Signing in as account: ${settings.secrets.igUsername}`)
 
-    const sessionResult = await axios.post<SessionInfo>("/clientsecurity/session", {
+    const authResult = await axios.post<SessionInfo>("/clientsecurity/session", {
       username: settings.secrets.igUsername,
       password: settings.secrets.igPassword,
       enc: false
     }, {
       baseURL: settings.plugin.igApiUri,
-      validateStatus: status => status == 200
-    })
-
-    log.info(`Getting tokens for accountId: ${settings.plugin.igAccountId}`)
-
-    const tokensResult = await axios.get("/clientsecurity/session/tokens", {
-      baseURL: settings.plugin.igApiUri,
-      validateStatus: status => status == 204,
-      params: {
-        accountId: settings.plugin.igAccountId
-      },
-      headers: {
-        Host: 'api.ig.com',
-        Origin: 'https://www.ig.com',
-        CST: sessionResult.headers.cst,
-        'X-SECURITY-TOKEN': sessionResult.headers['x-security-token'],
-      }
-    })
-
-    const tokens = tokensResult.headers as TokenHeaders
-
-    log.info(`Getting session info for accountId: ${settings.plugin.igAccountId}`)
-
-    const currentSession = await axios.get<SessionInfo>("/clientsecurity/session", {
-      baseURL: settings.plugin.igApiUri,
       validateStatus: status => status == 200,
       headers: {
         Host: 'api.ig.com',
         Origin: 'https://www.ig.com',
-        CST: tokens.cst,
-        'X-SECURITY-TOKEN': tokens["x-security-token"]
+        // Forces all accounts to be included in the list
+        'x-device-user-agent': "vendor=IG Group | applicationType=ig | platform=iOS | deviceType=phone | version=9.1430.0"
       }
     })
+    const authTokens = authResult.headers as TokenHeaders
 
-    if (currentSession.data.currentAccountId !== settings.plugin.igAccountId) {
-      log.error(`Could not switch session to accountId: ${settings.plugin.igAccountId}. Recieved: ${currentSession.data.currentAccountId}`)
-      throw currentSession
+    let accounts: AccountResult[] = []
+    log.info(`Fetching tokens for up to ${authResult.data.accounts.length} discovered accounts`)
+    for (const account of authResult.data.accounts) {
+      const accountId = account.accountId
+      const type = getAccountType(account.productCode)
+      if (type === 'unsupported') {
+        log.info(`Skipping account ${accountId} (${account.accountName}) as its product code (${account.productCode}) is not support`)
+        continue
+      }
+
+      log.info(`Fetching tokens for account ${accountId} (${account.accountName})`)
+
+      const tokensResult = await axios.get("/clientsecurity/session/tokens", {
+        baseURL: settings.plugin.igApiUri,
+        validateStatus: status => status == 204,
+        params: {
+          accountId: accountId
+        },
+        headers: {
+          Host: 'api.ig.com',
+          Origin: 'https://www.ig.com',
+          CST: authTokens.cst,
+          'X-SECURITY-TOKEN': authTokens['x-security-token'],
+        }
+      })
+  
+      const tokens = tokensResult.headers as TokenHeaders
+
+      accounts.push({
+        accountId,
+        type,
+        cst: tokens.cst,
+        xSecurityToken: tokens["x-security-token"]
+      })
     }
+
+    log.info(`All session info fetched.`)
     
     return {
-      info: currentSession.data,
-      accountId: settings.plugin.igAccountId,
-      cst: tokens.cst,
-      xSecurityToken: tokens["x-security-token"]
+      info: authResult.data,
+      accounts
     }
   } catch (e) {
     if (e.response) {

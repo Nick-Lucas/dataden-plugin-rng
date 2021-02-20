@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { DataRow } from "@dataden/sdk"
 
-import { SessionResult } from "./ig-auth"
+import { AccountResult } from "./ig-auth"
 import { Settings } from "./types"
 import { DateTime } from "luxon"
 import { date, dateFromComponents, float } from "./converters";
@@ -67,18 +67,18 @@ export interface IGLedgerHistoryResponse {
   error?: any
 }
 
-export async function loadTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
+export async function loadTrades(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
   const http = axios.create({
     headers: {
       'Content-Type': 'application/json',
-      'CST': session.cst,
-      'X-SECURITY-TOKEN': session.xSecurityToken,
+      'CST': account.cst,
+      'X-SECURITY-TOKEN': account.xSecurityToken,
       'Origin': 'https://www.ig.com'
     },
     baseURL: settings.plugin.igApiUri
   })
 
-  const accountId = session.accountId
+  const accountId = account.accountId
 
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
