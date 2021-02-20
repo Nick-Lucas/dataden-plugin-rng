@@ -9,6 +9,7 @@ import { Transaction, loadTransactions } from "./api/transactions";
 // import { Trade, loadTrades } from "./trades";
 
 import { loadFunding } from "./loaders/loadFunding";
+import { loadUser } from "./loaders/loadUser";
 
 
 export default createPlugin({
@@ -31,18 +32,20 @@ export default createPlugin({
   },
   loaders: [
     {
-      name: 'session_info',
+      name: 'user',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
         const session = await getSession(settings as Settings, log)
+
+        const user = await loadUser(session)
 
         return {
           mode: 'append',
           data: [
             {
               uniqueId: 'session',
-              ...session
+              ...user
             }
           ],
           syncInfo: {
