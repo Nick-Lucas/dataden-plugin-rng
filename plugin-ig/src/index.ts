@@ -4,11 +4,11 @@ import _ from 'lodash'
 import { Settings, RehydrationData } from "./types";
 import { generateBatches } from "./generateBatches";
 
-import { getSession } from "./ig-auth";
-import { Transaction, loadTransactions } from "./transactions";
+import { getSession } from "./api/ig-auth";
+import { Transaction, loadTransactions } from "./api/transactions";
 // import { Trade, loadTrades } from "./trades";
 
-import { loadFunding } from "./loadFunding";
+import { loadFunding } from "./loaders/loadFunding";
 
 
 export default createPlugin({

@@ -2,9 +2,9 @@ import axios from 'axios'
 import { DataRow } from "@dataden/sdk"
 
 import { AccountResult } from "./ig-auth"
-import { Settings } from "./types"
+import { Settings } from "../types"
 import { DateTime } from "luxon"
-import { date, dateFromComponents, float } from "./converters";
+import { date, dateFromComponents, float } from "../converters";
 
 const dateFormat = "dd-MM-yyyy"
 

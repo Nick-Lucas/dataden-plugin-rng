@@ -1,6 +1,6 @@
 import { pluginInstanceIsValid, SdkLogger } from "@dataden/sdk";
 import axios from "axios";
-import { Settings } from "./types";
+import { Settings } from "../types";
 
 type IGProductCode = "IGISA" | "IGSTK" | "IGFSB" | "IGCFD" | '_other_'
 

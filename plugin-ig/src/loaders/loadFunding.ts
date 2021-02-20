@@ -1,8 +1,8 @@
-import { Settings } from "./types";
-import { SessionResult } from "./ig-auth";
-import { SdkLogger, DataRow } from "@dataden/sdk";
+import { Settings } from "../types"
+import { SdkLogger, DataRow } from "@dataden/sdk"
 
-import { Summary, loadTransactions } from "./transactions";
+import { SessionResult } from "../api/ig-auth"
+import { Summary, loadTransactions } from "../api/transactions"
 
 export interface FundingTransaction extends DataRow {
   accountId: string
