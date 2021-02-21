@@ -65,7 +65,7 @@ export const loadStockTrades = async (settings: Settings, session: SessionResult
       // IG BUGFIX: Due to an apparent bug, different instruments have different scaling needs, but scaledSize is always whole shares
       //            so we recalculate pricePerShare for both home currency and exchange currency
       const size = trade.scaledSize
-      const pricePerShare = round(Math.abs(plWithoutFees) / size)
+      const pricePerShare = round(Math.abs(plWithoutFees) / Math.abs(size))
       const pricePerShareExchange = round(Math.abs(considerationAmount.value) / size)
 
       stockTrades.push({
