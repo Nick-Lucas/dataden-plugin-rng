@@ -18,6 +18,7 @@ export default createPlugin({
     return ({
       plugin: {
         igApiUri: 'https://api.ig.com',
+        includeRawData: false,
         backdateToISO: "2000-01-01T00:00:00Z",
         batchLengthMonths: 2
       },

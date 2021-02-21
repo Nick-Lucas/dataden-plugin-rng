@@ -68,29 +68,21 @@ export interface IGLedgerHistoryResponse {
 }
 
 export async function loadTrades(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
-  const http = axios.create({
-    headers: {
-      'Content-Type': 'application/json',
-      'CST': account.cst,
-      'X-SECURITY-TOKEN': account.xSecurityToken,
-      'Origin': 'https://www.ig.com'
-    },
-    baseURL: settings.plugin.igApiUri
-  })
-
-  const accountId = account.accountId
-
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
 
-  const result = await http.get<IGLedgerHistoryResponse>(
+  const result = await axios.get<IGLedgerHistoryResponse>(
    `/deal/ledgerhistory/list?startDate=${dateFrom}&endDate=${dateTo}&pageNumber=1&recordsPerPage=10000000`,
     {
       headers: {
         'Version': 1,
-        'IG-Account-ID': accountId,
-        'ig-account-id': accountId,
+        'Origin': 'https://www.ig.com',
+        'Content-Type': 'application/json',
+        'CST': account.cst,
+        'X-SECURITY-TOKEN': account.xSecurityToken,
+        'IG-Account-ID': account.accountId,
       },
+      baseURL: settings.plugin.igApiUri,
       validateStatus: status => status === 200
     }
   )
@@ -103,7 +95,7 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
 
       // extra fields
       uniqueId: t.orderID,
-      accountId: accountId,
+      accountId: account.accountId,
 
       // Conversions
       convertOnCloseRate: float(t.convertOnCloseRate),
@@ -115,7 +107,7 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
       tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
       tradeValue: float(t.tradeValue),
 
-      rawTrade: t
+      // rawTrade: t
     }
 
     return trade
