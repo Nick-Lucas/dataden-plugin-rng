@@ -11,6 +11,7 @@ import { Transaction, loadTransactions } from "./api/transactions";
 import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
 import { loadStockTrades } from "./loaders/loadStockTrades";
+import { loadPortfolio } from "./loaders/loadPortfolio";
 
 
 export default createPlugin({
@@ -33,61 +34,80 @@ export default createPlugin({
     } as Settings) as any
   },
   loaders: [
+    // {
+    //   name: 'user',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     const user = await loadUser(session)
+
+    //     return {
+    //       mode: 'append',
+    //       data: [
+    //         {
+    //           uniqueId: 'session',
+    //           ...user
+    //         }
+    //       ],
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
+    // {
+    //   name: 'funding',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     const funding = await loadFunding(settings, session, log)
+
+    //     return {
+    //       mode: 'append',
+    //       data: funding,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
+    // {
+    //   name: 'trades',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     const trades = await loadStockTrades(settings, session, log)
+
+    //     return {
+    //       mode: 'append',
+    //       data: trades,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
     {
-      name: 'user',
+      name: 'portfolio',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
         const session = await getSession(settings as Settings, log)
 
-        const user = await loadUser(session)
+        const portfolio = await loadPortfolio(settings, session, log)
 
         return {
           mode: 'append',
-          data: [
-            {
-              uniqueId: 'session',
-              ...user
-            }
-          ],
-          syncInfo: {
-            success: true,
-            rehydrationData: {}
-          }
-        }
-      }
-    },
-    {
-      name: 'funding',
-      load: async (_settings, request, log) => {
-        const settings = (_settings as unknown) as Settings
-
-        const session = await getSession(settings as Settings, log)
-
-        const funding = await loadFunding(settings, session, log)
-
-        return {
-          mode: 'append',
-          data: funding,
-          syncInfo: {
-            success: true,
-            rehydrationData: {}
-          }
-        }
-      }
-    },
-    {
-      name: 'trades',
-      load: async (_settings, request, log) => {
-        const settings = (_settings as unknown) as Settings
-
-        const session = await getSession(settings as Settings, log)
-
-        const trades = await loadStockTrades(settings, session, log)
-
-        return {
-          mode: 'append',
-          data: trades,
+          data: portfolio,
           syncInfo: {
             success: true,
             rehydrationData: {}

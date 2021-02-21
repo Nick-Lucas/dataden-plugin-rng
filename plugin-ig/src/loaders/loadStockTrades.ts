@@ -4,6 +4,7 @@ import { Settings } from "../types"
 import { SessionResult } from "../api/ig-auth"
 import { Trade, loadTrades } from "../api/trades"
 import { round } from "../converters";
+import _ from "lodash";
 
 export interface StockTrade extends DataRow {
   accountId: string
@@ -99,6 +100,6 @@ export const loadStockTrades = async (settings: Settings, session: SessionResult
     log.info(`Done for account ${account.accountId}`)
   }
 
-  return stockTrades
+  return _.sortBy(stockTrades, st => st.date.valueOf())
 }
       

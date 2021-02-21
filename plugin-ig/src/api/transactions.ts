@@ -71,7 +71,7 @@ export interface IGTransaction<TDate=string, TNumber=string> {
   currencyIsoCode?: string
 }
 
-export type Transaction = IGTransaction<Date, number> & DataRow & { 
+export type Transaction = Omit<IGTransaction<Date, number>, 'dateUtc'> & DataRow & { 
   summaryFlags: SummaryFlags 
   accountId: string
 }
@@ -135,8 +135,7 @@ export async function loadTransactions(settings: Settings, account: AccountResul
       plAmount: float(t.plAmount),
       profitAndLoss: float(t.profitAndLoss),
       size: float(t.profitAndLoss),
-      date: date(t.date, "dd/MM/yy"),
-      dateUtc: date(t.dateUtc),
+      date: date(t.dateUtc),
       openDateUtc: date(t.openDateUtc),
 
       rawTransaction: t

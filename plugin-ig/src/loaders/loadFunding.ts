@@ -1,11 +1,13 @@
 import { Settings } from "../types"
 import { SdkLogger, DataRow } from "@dataden/sdk"
+import _ from 'lodash'
 
 import { SessionResult } from "../api/ig-auth"
 import { Summary, loadTransactions } from "../api/transactions"
 
 export interface FundingTransaction extends DataRow {
   accountId: string
+  date: Date
   currency: string
   amount: number
   type: Summary
@@ -23,6 +25,7 @@ export const loadFunding = async (settings: Settings, session: SessionResult, lo
     for (const transaction of transactions) {
       funding.push({
         uniqueId: transaction.uniqueId,
+        date: transaction.dateUtc,
         accountId: account.accountId,
         currency: transaction.currency,
         type: transaction.summary,
@@ -33,5 +36,5 @@ export const loadFunding = async (settings: Settings, session: SessionResult, lo
     log.info(`Done for account ${account.accountId}`)
   }
 
-  return funding
+  return _.sortBy(funding, st => st.date.valueOf())
 }
