@@ -1,4 +1,4 @@
-import { dateFromComponents, round, weightedAverage } from "./converters";
+import { dateFromComponents, date, round, weightedAverage } from "./converters";
 
 describe("converters", () => {
   describe("round", () => {
@@ -30,9 +30,21 @@ describe("converters", () => {
   })
 
   describe("dateFromComponents", () => {
-    it ("should convert a valid date string", () => {
-      const date = dateFromComponents("25/06/2010", "08:15:01", "dd/MM/yyyy")
-      expect(date.toISOString()).toBe(new Date("2010-06-25T08:15:01.000Z").toISOString())
+    it ("should convert a valid date string as UTC", () => {
+      const result: Date = dateFromComponents("25/06/2010", "08:15:01", "dd/MM/yyyy")
+      expect(result.toISOString()).toBe(new Date("2010-06-25T08:15:01.000Z").toISOString())
+    })
+  })
+
+  describe("date", () => {
+    it ("should convert a valid ISO date string and maintain the timezone", () => {
+      const result: Date = date("2010-06-25T08:15:01.000+01:00")
+      expect(result.toISOString()).toBe(new Date("2010-06-25T07:15:01.000Z").toISOString())
+    })
+
+    it ("should convert a custom date string as UTC", () => {
+      const result: Date = date("25/06/2010", "dd/MM/yyyy")
+      expect(result.toISOString()).toBe(new Date("2010-06-25T00:00:00.000Z").toISOString())
     })
   })
 })

@@ -18,7 +18,7 @@ export function float(value: string): number {
 
 export function date(value: string, format=null): Date {
   const date: Date = format
-    ? DateTime.fromFormat(value, format).toJSDate()
+    ? DateTime.fromFormat(value, format, {zone: format ? 'utc' : undefined}).toJSDate()
     : new Date(value)
 
   return date
