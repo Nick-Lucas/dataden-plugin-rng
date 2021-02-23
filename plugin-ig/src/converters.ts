@@ -29,7 +29,7 @@ export function dateFromComponents(dateValue: string, timeValue: string, format=
     .split(":")
     .map(str => parseInt(str))
 
-  return DateTime.fromFormat(dateValue, format)
+  return DateTime.fromFormat(dateValue, format, {zone: "utc"})
                  .set({ hour, minute, second })
                  .toJSDate()
 }

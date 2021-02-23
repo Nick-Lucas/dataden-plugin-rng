@@ -31,8 +31,8 @@ describe("converters", () => {
 
   describe("dateFromComponents", () => {
     it ("should convert a valid date string", () => {
-      expect(dateFromComponents("25/06/2010", "08:15:01", "dd/MM/yyyy"))
-        .toBe(new Date("2010-06-25T08:15:01:000"))
+      const date = dateFromComponents("25/06/2010", "08:15:01", "dd/MM/yyyy")
+      expect(date.toISOString()).toBe(new Date("2010-06-25T08:15:01.000Z").toISOString())
     })
   })
 })
