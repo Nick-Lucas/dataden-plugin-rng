@@ -8,6 +8,13 @@ import { date, dateFromComponents, float } from "../converters";
 
 const dateFormat = "dd-MM-yyyy"
 
+export type TradeType = 
+  // Normal trades  
+  "TRADE" 
+
+  // Used for account corrections on stock mergers and ticker changes. Typically messes up lots of calculations
+  | "CORPORATE_ACTION" 
+
 export interface Pagination {
   page: number
   recordsPerPage: number
@@ -22,37 +29,42 @@ export interface Amount {
   transactionToBaseCcyRate?: any
 }
 
-export interface IGTrade<TDate=string, TNumber=string> {
+export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   accountId: string
   convertOnCloseRate: TNumber
   currency: string
-  direction: string
-  entryType: string
   epic: string
   formalInstrumentName: string
   instrumentDesc: string
-  narrative: string
   orderID: string
   orderSize: TNumber
-  orderType: string
   price: TNumber
   scaledSize: TNumber
+  amounts: Amount[]
+  tradeDateTime: TDate
+  tradeValue: TNumber
+  tradeType: TradeType
+}
+
+export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNumber> & {
+  direction: string
+  entryType: string
+  narrative: string
+  orderType: string
   settlementDate: TDate
   settlementStatus: string
   summaryCode: string
   summaryCodeDescription: string
-  amounts: Amount[]
   tradeDate: TDate
   tradeTime: string
-  tradeDateTime: TDate
-  tradeValue: TNumber
   venue: string
-  tradeType: string
 }
 
 
-export type Trade = IGTrade<Date, number> & DataRow & { 
+export type Trade = IGTradeGoodStuff<Date, number> & DataRow & { 
   accountId: string
+  tradeDateTime: Date
+  isBuy: boolean
 }
 
 export interface IGLedgerHistoryResponse {
@@ -91,23 +103,30 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
   
   return result.data.payload.txnHistory.map(t => {
     const trade: Trade = {
-      ...t,
-
       // extra fields
       uniqueId: t.orderID,
       accountId: account.accountId,
+      isBuy: float(t.scaledSize) > 0,
 
       // Conversions
       convertOnCloseRate: float(t.convertOnCloseRate),
       orderSize: float(t.orderSize),
       price: float(t.price),
       scaledSize: float(t.scaledSize),
-      settlementDate: date(t.settlementDate, "dd/MM/yyyy"),
-      tradeDate: date(t.tradeDate, "dd/MM/yyyy"),
       tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
       tradeValue: float(t.tradeValue),
 
-      // rawTrade: t
+      // Direct mappings
+      amounts: t.amounts,
+      currency: t.currency,
+      epic: t.epic,
+      formalInstrumentName: t.formalInstrumentName,
+      instrumentDesc: t.instrumentDesc,
+      orderID: t.orderID,
+      tradeType: t.tradeType,
+
+      // Debugging data
+      rawTrade: settings.plugin.includeRawData ? t : undefined
     }
 
     return trade

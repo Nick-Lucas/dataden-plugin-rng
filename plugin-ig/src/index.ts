@@ -6,7 +6,7 @@ import { generateBatches } from "./generateBatches";
 
 import { getSession } from "./api/ig-auth";
 import { Transaction, loadTransactions } from "./api/transactions";
-// import { Trade, loadTrades } from "./trades";
+import { Trade, loadTrades } from "./api/trades";
 
 import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
@@ -77,37 +77,27 @@ export default createPlugin({
     //     }
     //   }
     // },
-    // {
-    //   name: 'trades',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     const trades = await loadStockTrades(settings, session, log)
-
-    //     return {
-    //       mode: 'append',
-    //       data: trades,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
     {
-      name: 'portfolio',
+      name: 'trades',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
         const session = await getSession(settings as Settings, log)
 
-        const portfolio = await loadPortfolio(settings, session, log)
+        let trades = []
+        for (const account of session.accounts) {
+          const accountTrades = await loadTrades(
+            settings, 
+            account, 
+            settings.plugin.backdateToISO, 
+            new Date().toISOString())
+
+          trades.push(...accountTrades)
+        }
 
         return {
           mode: 'append',
-          data: portfolio,
+          data: trades,
           syncInfo: {
             success: true,
             rehydrationData: {}
@@ -115,6 +105,25 @@ export default createPlugin({
         }
       }
     },
+    // {
+    //   name: 'portfolio',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     const portfolio = await loadPortfolio(settings, session, log)
+
+    //     return {
+    //       mode: 'append',
+    //       data: portfolio,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
     // {
     //   name: 'transactions',
     //   load: async (_settings, request, log) => {
