@@ -39,6 +39,6 @@ export function round(val) {
 }
 
 
-export function weightedAverage(num1: number, weight1: number, num2: number,  weight2: number) {
-  return (num1 * weight1 + num2 * weight2) / (num1 + num2)
+export function weightedAverage(weightLeft: number, left: number, weightRight: number,  right: number) {
+  return (weightLeft * left + weightRight * right) / (weightLeft + weightRight)
 }
