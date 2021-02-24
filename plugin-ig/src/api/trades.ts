@@ -71,9 +71,6 @@ export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   accountId: string
   convertOnCloseRate: TNumber
   currency: string
-  epic: string
-  formalInstrumentName: string
-  instrumentDesc: string
   orderID: string
   price: TNumber
   tradeType: TradeType
@@ -81,6 +78,9 @@ export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
 
 export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNumber> & {
   direction: "+" | "-"
+  epic: string
+  formalInstrumentName: string
+  instrumentDesc: string
   entryType: string
   narrative: string
   orderType: string
@@ -100,6 +100,9 @@ export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNum
 
 export type Trade = IGTradeGoodStuff<Date, number> & DataRow & { 
   accountId: string
+  stockId: string,
+  stockName: string,
+  stockAltName: string,
   tradeDateTime: Date
   direction: "buy" | "sell"
   amounts: Amounts
@@ -170,9 +173,9 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
       // Direct mappings
       amounts,
       currency: t.currency,
-      epic: t.epic,
-      formalInstrumentName: t.formalInstrumentName,
-      instrumentDesc: t.instrumentDesc,
+      stockId: t.epic,
+      stockName: t.formalInstrumentName,
+      stockAltName: t.instrumentDesc,
       orderID: t.orderID,
       tradeType: t.tradeType,
 
