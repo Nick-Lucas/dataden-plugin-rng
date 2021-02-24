@@ -161,23 +161,21 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
     const trade: Trade = {
       // extra fields
       uniqueId: t.orderID,
+      orderID: t.orderID,
       accountId: account.accountId,
-      direction: isBuy ? "buy" : "sell",
-
-      // Conversions
-      convertOnCloseRate: float(t.convertOnCloseRate),
-      price,
-      size,
-      tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
-
-      // Direct mappings
-      amounts,
-      currency: t.currency,
       stockId: t.epic,
       stockName: t.formalInstrumentName,
       stockAltName: t.instrumentDesc,
-      orderID: t.orderID,
+      direction: isBuy ? "buy" : "sell",
       tradeType: t.tradeType,
+
+      // Conversions
+      convertOnCloseRate: float(t.convertOnCloseRate),
+      currency: t.currency,
+      price,
+      size,
+      tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
+      amounts,
 
       // Debugging data
       rawTrade: settings.plugin.includeRawData ? t : undefined
