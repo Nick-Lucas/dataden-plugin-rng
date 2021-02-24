@@ -28,9 +28,9 @@ describe("api trades", () => {
   it("should load and parse data", async () => {
     const trades = loadTrades(settings, account, "", "")
 
-    apiRespondsWith(simpleBuyFromApi)
+    apiRespondsWith(simpleFromApi)
 
-    expect(await trades).toEqual(simpleBuySanitised)
+    expect(await trades).toEqual(simpleSanitised)
   })
 })
 
@@ -60,7 +60,7 @@ const account: AccountResult = {
 }
 
 
-const simpleBuyFromApi: IGTrade<string, string>[] = [
+const simpleFromApi: IGTrade<string, string>[] = [
   {
     "accountId": "1",
     "convertOnCloseRate": "0.7352395",
@@ -109,13 +109,63 @@ const simpleBuyFromApi: IGTrade<string, string>[] = [
     "tradeDate": "01/02/2019",
     "tradeTime": "14:57:12",
     "tradeValue": "6.7928",
-    "tradeDateTime": undefined,
     "venue": "XOFF",
+    "tradeType": "TRADE"
+  },
+  {
+    "accountId": "1",
+    "convertOnCloseRate": "1.0000000",
+    "currency": "GBP",
+    "direction": "-",
+    "entryType": "ASSET",
+    "epic": "KA.D.EQQQLN.CASH.IP",
+    "formalInstrumentName": "Invesco EQQQ NASDAQ-100 UCITS ETF",
+    "instrumentDesc": "Invesco EQQQ NASDAQ-100 UCITS ETF",
+    "narrative": "NASDAQ NARRATIVE",
+    "orderID": "NASDAQ_ORDERID",
+    "orderSize": "-0.12",
+    "orderType": "AT_QUOTE",
+    "price": "22373.88",
+    "scaledSize": "-12",
+    "settlementDate": "25/02/2019",
+    "settlementStatus": "SETTLED",
+    "summaryCode": "30001",
+    "summaryCodeDescription": "Order",
+    "amounts": [
+      {
+        "value": 2684.87,
+        "currency": "GBP",
+        "amountType": "CONSIDERATION",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": -3,
+        "currency": "GBP",
+        "amountType": "COMMISSION",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": 0,
+        "currency": "GBP",
+        "amountType": "TOTAL_CHARGE",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": -2681.87,
+        "currency": "GBP",
+        "amountType": "TOTAL_AMOUNT",
+        "transactionToBaseCcyRate": null
+      }
+    ],
+    "tradeDate": "23/02/2019",
+    "tradeTime": "14:45:48",
+    "tradeValue": "-2684.8656",
+    "venue": "XLON",
     "tradeType": "TRADE"
   }
 ]
 
-const simpleBuySanitised: Trade[] = [
+const simpleSanitised: Trade[] = [
   {
     "accountId": "1",
     "convertOnCloseRate": 0.7352395,
@@ -158,5 +208,48 @@ const simpleBuySanitised: Trade[] = [
     "tradeValue": 6.7928,
     "tradeType": "TRADE",
     "uniqueId": "ORDER_ID_FIELD",
+  },
+  {
+    "accountId": "1",
+    "convertOnCloseRate": 1,
+    "currency": "GBP",
+    "isBuy": false,
+    "epic": "KA.D.EQQQLN.CASH.IP",
+    "formalInstrumentName": "Invesco EQQQ NASDAQ-100 UCITS ETF",
+    "instrumentDesc": "Invesco EQQQ NASDAQ-100 UCITS ETF",
+    "orderID": "NASDAQ_ORDERID",
+    "orderSize": -0.12,
+    "price": 22373.88,
+    "scaledSize": -12,
+    "amounts": [
+      {
+        "value": 2684.87,
+        "currency": "GBP",
+        "amountType": "CONSIDERATION",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": -3,
+        "currency": "GBP",
+        "amountType": "COMMISSION",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": 0,
+        "currency": "GBP",
+        "amountType": "TOTAL_CHARGE",
+        "transactionToBaseCcyRate": null
+      },
+      {
+        "value": -2681.87,
+        "currency": "GBP",
+        "amountType": "TOTAL_AMOUNT",
+        "transactionToBaseCcyRate": null
+      }
+    ],
+    "tradeValue": -2684.8656,
+    "tradeType": "TRADE",
+    "uniqueId": "NASDAQ_ORDERID",
+    "tradeDateTime": new Date("2019-02-23T14:45:48.000Z"),
   }
 ]

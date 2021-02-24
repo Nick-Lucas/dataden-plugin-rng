@@ -41,7 +41,6 @@ export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   price: TNumber
   scaledSize: TNumber
   amounts: Amount[]
-  tradeDateTime: TDate
   tradeValue: TNumber
   tradeType: TradeType
 }
