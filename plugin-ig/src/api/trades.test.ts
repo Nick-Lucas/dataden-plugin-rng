@@ -178,32 +178,32 @@ const simpleSanitised: Trade[] = [
     "orderSize": 0.08,
     "price": 84.91,
     "scaledSize": 8,
-    "amounts": [
-      {
+    "amounts": {
+      consideration: {
         "value": -679.28,
         "currency": "USD",
         "amountType": "CONSIDERATION",
         "transactionToBaseCcyRate": null
       },
-      {
+      commission: {
         "value": 0,
         "currency": "GBP",
         "amountType": "COMMISSION",
         "transactionToBaseCcyRate": null
       },
-      {
+      charges: {
         "value": 0,
         "currency": "GBP",
         "amountType": "TOTAL_CHARGE",
         "transactionToBaseCcyRate": null
       },
-      {
+      total: {
         "value": -499.43,
         "currency": "GBP",
         "amountType": "TOTAL_AMOUNT",
         "transactionToBaseCcyRate": null
       }
-    ],
+    },
     "tradeDateTime": new Date("2019-02-01T14:57:12.000Z"),
     "tradeValue": 6.7928,
     "tradeType": "TRADE",
@@ -221,32 +221,32 @@ const simpleSanitised: Trade[] = [
     "orderSize": -0.12,
     "price": 22373.88,
     "scaledSize": -12,
-    "amounts": [
-      {
+    "amounts": {
+      consideration: {
         "value": 2684.87,
         "currency": "GBP",
         "amountType": "CONSIDERATION",
         "transactionToBaseCcyRate": null
       },
-      {
+      commission: {
         "value": -3,
         "currency": "GBP",
         "amountType": "COMMISSION",
         "transactionToBaseCcyRate": null
       },
-      {
+      charges: {
         "value": 0,
         "currency": "GBP",
         "amountType": "TOTAL_CHARGE",
         "transactionToBaseCcyRate": null
       },
-      {
+      total: {
         "value": -2681.87,
         "currency": "GBP",
         "amountType": "TOTAL_AMOUNT",
         "transactionToBaseCcyRate": null
       }
-    ],
+    },
     "tradeValue": -2684.8656,
     "tradeType": "TRADE",
     "uniqueId": "NASDAQ_ORDERID",

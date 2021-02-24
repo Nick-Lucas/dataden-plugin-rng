@@ -50,8 +50,8 @@ export const loadStockTrades = async (settings: Settings, session: SessionResult
       
       const { amounts, convertOnCloseRate } = trade
 
-      const totalAmount = amounts.find(am => am.amountType === 'TOTAL_AMOUNT')
-      const considerationAmount = amounts.find(am => am.amountType === 'CONSIDERATION')
+      const totalAmount = amounts.total
+      const considerationAmount = amounts.consideration
 
       // IG BUGFIX: Due to an apparent bug, value directions need correcting as they are randomly opposite signed
       totalAmount.value = isBuy ? -Math.abs(totalAmount.value) : Math.abs(totalAmount.value)

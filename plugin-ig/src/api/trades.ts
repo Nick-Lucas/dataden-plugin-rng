@@ -1,9 +1,9 @@
 import axios from 'axios'
+import { DateTime } from "luxon"
 import { DataRow } from "@dataden/sdk"
 
 import { AccountResult } from "./ig-auth"
 import { Settings } from "../types"
-import { DateTime } from "luxon"
 import { date, dateFromComponents, float } from "../converters";
 
 const dateFormat = "dd-MM-yyyy"
@@ -25,8 +25,46 @@ export interface Pagination {
 export interface Amount {
   value: number
   currency: string
-  amountType: string
+  amountType: "CONSIDERATION" | "COMMISSION" | "TOTAL_CHARGE" | "TOTAL_AMOUNT"
   transactionToBaseCcyRate?: any
+}
+export interface Amounts {
+  /** the initial sum (price*size) in the original currency, with no fees applied */
+  consideration: Amount
+
+  /** just commission/trade fees */
+  commission: Amount
+
+  /** additional charges */
+  charges: Amount
+
+  /** final sum in the account's native currency, with fees and commissions applied */
+  total: Amount
+}
+
+function getAmounts(amounts: Amount[]): Amounts {
+  return {
+    consideration: amounts.find(a => a.amountType === "CONSIDERATION") ?? {
+      value: 0,
+      amountType: "CONSIDERATION",
+      currency: "GBP"
+    },
+    charges: amounts.find(a => a.amountType === "TOTAL_CHARGE") ?? {
+      value: 0,
+      amountType: "TOTAL_CHARGE",
+      currency: "GBP"
+    },
+    commission: amounts.find(a => a.amountType === "COMMISSION") ?? {
+      value: 0,
+      amountType: "COMMISSION",
+      currency: "GBP"
+    },
+    total: amounts.find(a => a.amountType === "TOTAL_AMOUNT") ?? {
+      value: 0,
+      amountType: "TOTAL_AMOUNT",
+      currency: "GBP"
+    },
+  }
 }
 
 export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
@@ -40,7 +78,6 @@ export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   orderSize: TNumber
   price: TNumber
   scaledSize: TNumber
-  amounts: Amount[]
   tradeValue: TNumber
   tradeType: TradeType
 }
@@ -54,6 +91,7 @@ export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNum
   settlementStatus: string
   summaryCode: string
   summaryCodeDescription: string
+  amounts: Amount[]
   tradeDate: TDate
   tradeTime: string
   venue: string
@@ -64,6 +102,7 @@ export type Trade = IGTradeGoodStuff<Date, number> & DataRow & {
   accountId: string
   tradeDateTime: Date
   isBuy: boolean
+  amounts: Amounts
 }
 
 export interface IGLedgerHistoryResponse {
@@ -116,7 +155,7 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
       tradeValue: float(t.tradeValue),
 
       // Direct mappings
-      amounts: t.amounts,
+      amounts: getAmounts(t.amounts),
       currency: t.currency,
       epic: t.epic,
       formalInstrumentName: t.formalInstrumentName,
