@@ -4,7 +4,7 @@ import { DataRow } from "@dataden/sdk"
 
 import { AccountResult } from "./ig-auth"
 import { Settings } from "../types"
-import { date, dateFromComponents, float } from "../converters";
+import { date, dateFromComponents, float, round } from "../converters";
 
 const dateFormat = "dd-MM-yyyy"
 
@@ -75,18 +75,17 @@ export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   formalInstrumentName: string
   instrumentDesc: string
   orderID: string
-  orderSize: TNumber
   price: TNumber
-  scaledSize: TNumber
-  tradeValue: TNumber
   tradeType: TradeType
 }
 
 export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNumber> & {
-  direction: string
+  direction: "+" | "-"
   entryType: string
   narrative: string
   orderType: string
+  orderSize: TNumber
+  scaledSize: TNumber
   settlementDate: TDate
   settlementStatus: string
   summaryCode: string
@@ -94,6 +93,7 @@ export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNum
   amounts: Amount[]
   tradeDate: TDate
   tradeTime: string
+  tradeValue: TNumber
   venue: string
 }
 
@@ -101,8 +101,9 @@ export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNum
 export type Trade = IGTradeGoodStuff<Date, number> & DataRow & { 
   accountId: string
   tradeDateTime: Date
-  isBuy: boolean
+  direction: "buy" | "sell"
   amounts: Amounts
+  size: number
 }
 
 export interface IGLedgerHistoryResponse {
@@ -140,22 +141,34 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
   // TODO: validate pages in case a second page exists
   
   return result.data.payload.txnHistory.map(t => {
+    const isBuy = float(t.scaledSize) >= 0
+    const amounts: Amounts = getAmounts(t.amounts)
+
+    // IG BUG: repair sign on final amounts, which is sometimes wrong
+    amounts.consideration.value = isBuy
+      ? -Math.abs(amounts.consideration.value)
+      : Math.abs(amounts.consideration.value)
+    amounts.total.value = isBuy
+      ? -Math.abs(amounts.total.value)
+      : Math.abs(amounts.total.value)
+
+    const size = float(t.scaledSize)
+    const price = round(Math.abs(amounts.consideration.value / size))
+
     const trade: Trade = {
       // extra fields
       uniqueId: t.orderID,
       accountId: account.accountId,
-      isBuy: float(t.scaledSize) > 0,
+      direction: isBuy ? "buy" : "sell",
 
       // Conversions
       convertOnCloseRate: float(t.convertOnCloseRate),
-      orderSize: float(t.orderSize),
-      price: float(t.price),
-      scaledSize: float(t.scaledSize),
+      price,
+      size,
       tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
-      tradeValue: float(t.tradeValue),
 
       // Direct mappings
-      amounts: getAmounts(t.amounts),
+      amounts,
       currency: t.currency,
       epic: t.epic,
       formalInstrumentName: t.formalInstrumentName,

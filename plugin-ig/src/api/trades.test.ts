@@ -26,11 +26,17 @@ describe("api trades", () => {
   }
 
   it("should load and parse data", async () => {
-    const trades = loadTrades(settings, account, "", "")
-
+    const promise = loadTrades(settings, account, "", "")
     apiRespondsWith(simpleFromApi)
+    const trades = await promise
 
-    expect(await trades).toEqual(simpleSanitised)
+    expect(trades).toEqual(simpleSanitised)
+    for (const trade of trades) {
+      // Amounts are negative for buys since they are the cost applied to the account
+      // We flip the amount to check the price/size data because a buy is a positive size, sell is negative size, and price is always positive
+      expect(trade.price * trade.size)
+        .toBeCloseTo(-trade.amounts.consideration.value, 1)
+    }
   })
 })
 
@@ -123,16 +129,23 @@ const simpleFromApi: IGTrade<string, string>[] = [
     "instrumentDesc": "Invesco EQQQ NASDAQ-100 UCITS ETF",
     "narrative": "NASDAQ NARRATIVE",
     "orderID": "NASDAQ_ORDERID",
-    "orderSize": "-0.12",
     "orderType": "AT_QUOTE",
+    
+    // IG BUG: compared to the other item, these numbers are scaled wrong
+    // orderSize and scaledSize should be normalised into one and the price recalculated
+    "orderSize": "-0.12",
     "price": "22373.88",
     "scaledSize": "-12",
+    "tradeValue": "-2684.8656",
+
     "settlementDate": "25/02/2019",
     "settlementStatus": "SETTLED",
     "summaryCode": "30001",
     "summaryCodeDescription": "Order",
     "amounts": [
       {
+        // IG BUG: this sign is wrong and it's straight from the API
+        // This should be normalised
         "value": 2684.87,
         "currency": "GBP",
         "amountType": "CONSIDERATION",
@@ -159,7 +172,6 @@ const simpleFromApi: IGTrade<string, string>[] = [
     ],
     "tradeDate": "23/02/2019",
     "tradeTime": "14:45:48",
-    "tradeValue": "-2684.8656",
     "venue": "XLON",
     "tradeType": "TRADE"
   }
@@ -170,14 +182,13 @@ const simpleSanitised: Trade[] = [
     "accountId": "1",
     "convertOnCloseRate": 0.7352395,
     "currency": "USD",
-    "isBuy": true,
+    "direction": "buy",
     "epic": "SA.D.AMD.CASH.IP",
     "formalInstrumentName": "Advanced Micro Devices Inc",
     "instrumentDesc": "Advanced Micro Devices Inc (All Sessions)",
     "orderID": "ORDER_ID_FIELD",
-    "orderSize": 0.08,
     "price": 84.91,
-    "scaledSize": 8,
+    "size": 8,
     "amounts": {
       consideration: {
         "value": -679.28,
@@ -205,7 +216,6 @@ const simpleSanitised: Trade[] = [
       }
     },
     "tradeDateTime": new Date("2019-02-01T14:57:12.000Z"),
-    "tradeValue": 6.7928,
     "tradeType": "TRADE",
     "uniqueId": "ORDER_ID_FIELD",
   },
@@ -213,14 +223,13 @@ const simpleSanitised: Trade[] = [
     "accountId": "1",
     "convertOnCloseRate": 1,
     "currency": "GBP",
-    "isBuy": false,
+    "direction": "sell",
     "epic": "KA.D.EQQQLN.CASH.IP",
     "formalInstrumentName": "Invesco EQQQ NASDAQ-100 UCITS ETF",
     "instrumentDesc": "Invesco EQQQ NASDAQ-100 UCITS ETF",
     "orderID": "NASDAQ_ORDERID",
-    "orderSize": -0.12,
-    "price": 22373.88,
-    "scaledSize": -12,
+    "price": 223.74,
+    "size": -12,
     "amounts": {
       consideration: {
         "value": 2684.87,
@@ -241,13 +250,12 @@ const simpleSanitised: Trade[] = [
         "transactionToBaseCcyRate": null
       },
       total: {
-        "value": -2681.87,
+        "value": 2681.87,
         "currency": "GBP",
         "amountType": "TOTAL_AMOUNT",
         "transactionToBaseCcyRate": null
       }
     },
-    "tradeValue": -2684.8656,
     "tradeType": "TRADE",
     "uniqueId": "NASDAQ_ORDERID",
     "tradeDateTime": new Date("2019-02-23T14:45:48.000Z"),
