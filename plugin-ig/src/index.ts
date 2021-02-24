@@ -12,6 +12,7 @@ import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
 import { loadStockTrades } from "./loaders/loadStockTrades";
 import { loadPortfolio } from "./loaders/loadPortfolio";
+import { loadPortfolioSummary } from "./loaders/loadPortfolioSummary";
 
 
 export default createPlugin({
@@ -77,27 +78,46 @@ export default createPlugin({
     //     }
     //   }
     // },
+    // {
+    //   name: 'trades',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     let trades = []
+    //     for (const account of session.accounts) {
+    //       const accountTrades = await loadTrades(
+    //         settings, 
+    //         account, 
+    //         settings.plugin.backdateToISO, 
+    //         new Date().toISOString())
+
+    //       trades.push(...accountTrades)
+    //     }
+
+    //     return {
+    //       mode: 'append',
+    //       data: trades,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
     {
-      name: 'trades',
+      name: 'portfolio_summary',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
         const session = await getSession(settings as Settings, log)
 
-        let trades = []
-        for (const account of session.accounts) {
-          const accountTrades = await loadTrades(
-            settings, 
-            account, 
-            settings.plugin.backdateToISO, 
-            new Date().toISOString())
-
-          trades.push(...accountTrades)
-        }
+        const summary = await loadPortfolioSummary(settings, session, log)
 
         return {
           mode: 'append',
-          data: trades,
+          data: summary,
           syncInfo: {
             success: true,
             rehydrationData: {}

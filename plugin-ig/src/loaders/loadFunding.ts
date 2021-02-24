@@ -2,6 +2,7 @@ import { Settings } from "../types"
 import { SdkLogger, DataRow } from "@dataden/sdk"
 import _ from 'lodash'
 
+import { date } from "../converters";
 import { SessionResult } from "../api/ig-auth"
 import { Summary, loadTransactions } from "../api/transactions"
 
@@ -25,7 +26,7 @@ export const loadFunding = async (settings: Settings, session: SessionResult, lo
     for (const transaction of transactions) {
       funding.push({
         uniqueId: transaction.uniqueId,
-        date: transaction.dateUtc,
+        date: date(transaction.dateUtc),
         accountId: account.accountId,
         currency: transaction.currency,
         type: transaction.summary,

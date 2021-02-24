@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { DateTime } from "luxon"
+import _ from 'lodash'
 import { DataRow } from "@dataden/sdk"
 
-import { AccountResult } from "./ig-auth"
+import { AccountResult, SessionResult } from "./ig-auth"
 import { Settings } from "../types"
 import { date, dateFromComponents, float, round } from "../converters";
 
@@ -119,6 +120,16 @@ export interface IGLedgerHistoryResponse {
     txnHistory: IGTrade[]
   }
   error?: any
+}
+
+export async function loadAllTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string) {
+  const trades: Trade[] = []
+  for (const account of session.accounts) {
+    const accountTrades = await loadTrades(settings, account, startDateIso, endDateIso)
+
+    trades.push(...accountTrades)
+  }
+  return _.sortBy(trades, trade => trade.tradeDateTime.valueOf())
 }
 
 export async function loadTrades(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
