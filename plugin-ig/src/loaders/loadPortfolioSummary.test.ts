@@ -111,6 +111,8 @@ describe("loadPortfolioSummary", () => {
         positions: {
           "AMD": {
             stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
             averagePrice: 10.03,
             size: 100,
             bookCost: 1003,
@@ -131,6 +133,8 @@ describe("loadPortfolioSummary", () => {
         positions: {
           "AMD": {
             stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
             averagePrice: 10.03,
             size: 100,
             bookCost: 1003,
@@ -180,6 +184,8 @@ describe("loadPortfolioSummary", () => {
         positions: {
           "AMD": {
             stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
             averagePrice: 0,
             size: 0,
             bookCost: 0,
@@ -200,6 +206,8 @@ describe("loadPortfolioSummary", () => {
         positions: {
           "AMD": {
             stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
             averagePrice: 0,
             size: 0,
             bookCost: 0,

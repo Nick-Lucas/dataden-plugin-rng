@@ -1,15 +1,18 @@
 import { SdkLogger, DataRow } from "@dataden/sdk"
-import _, { last } from "lodash"
+import _ from "lodash"
 import { DateTime, Duration } from "luxon";
 
 import { Settings } from "../types"
-import { round, weightedAverage } from "../converters";
+import { round } from "../converters";
 import { SessionResult } from "../api/ig-auth"
 import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
 
 export interface Position {
   stockId: string
+  stockName: string
+  stockAltName: string
+
   size: number
   bookCost: number
   averagePrice: number
@@ -75,6 +78,8 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       editPosition(slice, trade.stockId, (current: Position) => {
         const position: Position = {
           stockId: trade.stockId,
+          stockName: trade.stockName,
+          stockAltName: trade.stockAltName,
           averagePrice: 0,
           bookCost: 0,
           size: 0,
@@ -119,6 +124,8 @@ function editPosition(slice: PortfolioSlice, stockId: string, callback: (positio
     ? _.clone(slice.positions[stockId])
     : {
       stockId,
+      stockName: null, 
+      stockAltName: null,
       bookCost: 0,
       size: 0,
       averagePrice: 0,
