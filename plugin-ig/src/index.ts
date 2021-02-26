@@ -113,7 +113,7 @@ export default createPlugin({
 
         const session = await getSession(settings as Settings, log)
 
-        const summary = await loadPortfolioSummary(settings, session, log)
+        const summary = await loadPortfolioSummary(settings, session, log, new Date())
 
         return {
           mode: 'append',
