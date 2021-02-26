@@ -83,7 +83,8 @@ describe("loadPortfolioSummary", () => {
     tradeData = [
       getTrade(0, 0, "AMD", {
         size: 100,
-        price: 10
+        price: 10,
+        fees: 3
       })
     ]
 
@@ -98,17 +99,108 @@ describe("loadPortfolioSummary", () => {
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
         netFunding: 5000,
-        cash: 4000,
-        bookCost: 1000,
+        cash: 3997,
+        bookCost: 1003,
+        bookValue: 1000,
+        feesPaid: 3,
         trades: [tradeData[0]],
-        transactions: [fundingData[0]]
+        transactions: [fundingData[0]],
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            averagePrice: 10.03,
+            size: 100,
+            bookCost: 1003,
+            bookValue: 1000,
+            latestPrice: 10,
+          }
+        }
       }),
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
         netFunding: 5000,
-        cash: 4000,
-        bookCost: 1000,
+        cash: 3997,
+        bookCost: 1003,
+        bookValue: 1000,
+        feesPaid: 3,
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            averagePrice: 10.03,
+            size: 100,
+            bookCost: 1003,
+            bookValue: 1000,
+            latestPrice: 10,
+          }
+        }
+      })
+    ])
+  })
+
+  it ("should buy and sell a stock on one day", async () => {
+    fundingData = [
+      getFunding(0, 5000),
+    ]
+    tradeData = [
+      getTrade(0, 0, "AMD", {
+        size: 100,
+        price: 10,
+        fees: 3
+      }),
+      getTrade(0, 1, "AMD", {
+        size: -100,
+        price: 12,
+        fees: 3
+      }),
+    ]
+
+    const portfolioSummary = await subject(settings, session, console, getDate(1).toJSDate())
+
+    expect(portfolioSummary).toEqual<PortfolioSlice[]>([
+      getPortfolioSlice({
+        uniqueId: getDate(-1).toISO(),
+        date: getDate(-1).toJSDate(),
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(0).toISO(),
+        date: getDate(0).toJSDate(),
+        netFunding: 5000,
+        cash: 5194,
+        bookCost: 0,
+        bookValue: 0,
+        feesPaid: 6,
+        trades: [tradeData[0], tradeData[1]],
+        transactions: [fundingData[0]],
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            averagePrice: 0,
+            size: 0,
+            bookCost: 0,
+            bookValue: 0,
+            latestPrice: 12,
+          }
+        }
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(1).toISO(),
+        date: getDate(1).toJSDate(),
+        netFunding: 5000,
+        cash: 5194,
+        bookCost: 0,
+        bookValue: 0,
+        feesPaid: 6,
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            averagePrice: 0,
+            size: 0,
+            bookCost: 0,
+            bookValue: 0,
+            latestPrice: 12,
+          }
+        }
       })
     ])
   })
@@ -187,17 +279,18 @@ function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { s
 }
 
 function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
-  return Object.assign(
+  return Object.assign<PortfolioSlice, Partial<PortfolioSlice>>(
     {
       uniqueId: getDate(0).toISO(),
       date: getDate(0).toJSDate(),
       netFunding: 0,
       cash: 0,
       bookCost: 0,
-      accountValue: 0,
+      bookValue: 0,
       feesPaid: 0,
       trades: [],
-      transactions: []
+      transactions: [],
+      positions: {}
     }, 
     slice
   )

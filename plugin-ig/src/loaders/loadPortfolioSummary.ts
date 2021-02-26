@@ -3,10 +3,21 @@ import _, { last } from "lodash"
 import { DateTime, Duration } from "luxon";
 
 import { Settings } from "../types"
-import { round } from "../converters";
+import { round, weightedAverage } from "../converters";
 import { SessionResult } from "../api/ig-auth"
 import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
+
+export interface Position {
+  stockId: string
+  size: number
+  bookCost: number
+  averagePrice: number
+
+  // TODO: pull this data from proper feeds, rather than inferring it from recent trades
+  bookValue: number
+  latestPrice: number
+}
 
 export interface PortfolioSlice extends DataRow {
   date: Date
@@ -14,11 +25,12 @@ export interface PortfolioSlice extends DataRow {
   netFunding: number
   cash: number
   bookCost: number
-  accountValue: number
+  bookValue: number
   feesPaid: number
 
   trades: Trade[]
   transactions: FundingTransaction[]
+  positions: Record<string, Position>
 }
 
 export const loadPortfolioSummary = async (settings: Settings, session: SessionResult, log: SdkLogger, toDate: Date): Promise<PortfolioSlice[]> => {
@@ -36,28 +48,15 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     allTrades[0]?.tradeDateTime.valueOf()
   ].filter(Boolean)))
 
-  const grain = Duration.fromObject({day: 1})
-  let cursorDate = DateTime.fromJSDate(minDate, { zone: 'UTC' }).set({weekday: 0, hour: 0, minute: 0, second: 0, millisecond: 0})
-  let nextCursorDate = cursorDate.plus(grain)
-  const endDate = DateTime.fromJSDate(toDate, { zone: 'UTC' })
-  const endDateValue = endDate.valueOf()
+  const cursor = new DateRangeCursor(minDate, toDate, Duration.fromObject({day: 1}))
+  
+  log.info(`Starting to build portfolio from ${cursor.left().toISO()} to ${toDate.toISOString()}`)
 
-  if (cursorDate.valueOf() > endDateValue) {
-    throw new Error("backdateToISO is greater than now")
-  }
+  const portfolio = new Portfolio()
+  while (cursor.next()) {
+    const slice = portfolio.getNextSlice(cursor.left())
 
-  log.info(`Starting to build portfolio from ${cursorDate.toISO()} to ${endDate.toISO()}`)
-
-  const portfolio: PortfolioSlice[] = []
-  while (cursorDate.valueOf() <= endDateValue) {
-    const slice = _.clone(_.last(portfolio) ?? getDefaultSlice(cursorDate))
-
-    slice.uniqueId = cursorDate.toISO()
-    slice.date = cursorDate.toJSDate()
-    slice.trades = []
-    slice.transactions = []
-
-    while (allFunding.length > 0 && allFunding[0].date.valueOf() < nextCursorDate.valueOf()) {
+    while (allFunding.length > 0 && allFunding[0].date.valueOf() < cursor.right().valueOf()) {
       const [funding] = allFunding.splice(0, 1)
       slice.cash = round(slice.cash + funding.amount)
       slice.netFunding = round(slice.netFunding + funding.amount)
@@ -65,34 +64,136 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       slice.transactions.push(funding)
     }
 
-    while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < nextCursorDate.valueOf()) {
+    while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < cursor.right().valueOf()) {
       const [trade] = allTrades.splice(0, 1)
+      
+      // Top level data
       slice.cash = round(slice.cash + trade.amounts.total.value)
-      slice.bookCost = round(slice.bookCost - trade.amounts.total.value) // TODO: adjust this for bookValue changes based on DCA
       slice.feesPaid = round(slice.feesPaid + trade.amounts.charges.value + trade.amounts.commission.value)
-      // slice.accountValue //TODO: calculate this
+
+      editPosition(slice, trade.stockId, (current: Position) => {
+        const position: Position = {
+          stockId: trade.stockId,
+          averagePrice: 0,
+          bookCost: 0,
+          size: 0,
+          bookValue: 0,
+          latestPrice: 0
+        }
+        
+        if (trade.direction === 'buy') {
+          position.bookCost = position.bookCost - trade.amounts.total.value
+        } else {
+          position.bookCost = position.bookCost + (trade.size * position.averagePrice)
+        }
+        
+        position.size = current.size + trade.size
+        
+        position.averagePrice = position.size === 0 
+          ? 0 
+          : position.bookCost / position.size
+
+        position.latestPrice = trade.price
+        position.bookValue = position.size * trade.price
+
+        return position
+      })
+
+      // Calculated data from positions
+      slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
+      slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
 
       slice.trades.push(trade)
     }
-    
-    portfolio.push(slice)
-    cursorDate = nextCursorDate
-    nextCursorDate = nextCursorDate.plus(grain)
   }
   
-  return portfolio
+  return portfolio.getSlices()
 }
 
-function getDefaultSlice(date: DateTime): PortfolioSlice {
-  return {
-    uniqueId: date.toISO(),
-    date: date.toJSDate(),
-    cash: 0,
-    accountValue: 0,
-    bookCost: 0,
-    netFunding: 0,
-    feesPaid: 0,
-    trades: [],
-    transactions: []
+function editPosition(slice: PortfolioSlice, stockId: string, callback: (position: Position) => Position) {
+  slice.positions = slice.positions ?? {}
+
+  const currentPosition: Position = slice.positions[stockId]
+    ? _.clone(slice.positions[stockId])
+    : {
+      stockId,
+      bookCost: 0,
+      size: 0,
+      averagePrice: 0,
+      bookValue: 0,
+      latestPrice: 0
+    }
+    
+  slice.positions[stockId] = callback(currentPosition)
+}
+
+class Portfolio {
+  slices: PortfolioSlice[] = []
+
+  private getDefaultSlice(): PortfolioSlice {
+    return {
+      uniqueId: null,
+      date: null,
+      cash: 0,
+      bookValue: 0,
+      bookCost: 0,
+      netFunding: 0,
+      feesPaid: 0,
+      trades: [],
+      transactions: [],
+      positions: {}
+    }
+  }
+
+  getNextSlice = (date: DateTime) => {
+    const slice = _.clone(_.last(this.slices) ?? this.getDefaultSlice())
+    
+    this.slices.push(slice)
+
+    slice.uniqueId = date.toISO()
+    slice.date = date.toJSDate()
+    slice.trades = []
+    slice.transactions = []
+    slice.positions = _.cloneDeep(slice.positions)
+  
+    return slice
+  }
+
+  getSlices = () => this.slices
+}
+
+class DateRangeCursor {
+  private _grain: Duration = null
+  private _end: DateTime = null
+  private _endValue: number = null
+
+  private _cursor: DateTime = null
+  private _nextCursor: DateTime = null
+
+  constructor(start: Date, end: Date, grain: Duration) {
+    this._grain = grain
+    this._end = DateTime.fromJSDate(end, { zone: 'UTC' })
+    this._endValue = this._end.valueOf()
+
+    this._cursor = null
+    this._nextCursor = DateTime.fromJSDate(start, { zone: 'UTC' }).set({weekday: 0, hour: 0, minute: 0, second: 0, millisecond: 0})
+  }
+
+  left = () => {
+    return this._cursor ?? this._nextCursor
+  }
+
+  right = () => {
+    return this._nextCursor
+  }
+
+  next = () => {
+    if (!this._cursor || this._cursor.valueOf() < this._endValue) {
+      this._cursor = this._nextCursor
+      this._nextCursor = this._cursor.plus(this._grain)
+      return true
+    } else {
+      return false
+    }
   }
 }
