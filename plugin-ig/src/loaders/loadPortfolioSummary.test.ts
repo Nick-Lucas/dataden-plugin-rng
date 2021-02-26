@@ -76,7 +76,7 @@ describe("loadPortfolioSummary", () => {
     ])
   })
 
-  it ("should build a portfolio with trades, rewound to the start of the first week", async () => {
+  it ("should build a portfolio with trades", async () => {
     fundingData = [
       getFunding(0, 5000),
     ]
@@ -231,26 +231,24 @@ function getFunding(dayDelta: number, amount = 0, { accountId = "1", currency = 
 }
 
 type getTradeOpts = Partial<{ size: number, price: number, fees: number, initialCurrency: "GBP" | "USD" }>
-function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { size = 1, price = 10, fees = 0, initialCurrency = "GBP" }: getTradeOpts): Trade {
+function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { size = 1, price = 10, fees = 0 }: getTradeOpts): Trade {
   if (hourDelta >= 16) {
     throw "Hour delta would be the next day!"
   }
   const date = getDate(dayDelta, "time-set").plus({ hours: hourDelta })
 
-  const convertRate = initialCurrency === 'GBP' ? 1 : 0.75
-
   return {
     uniqueId: date.toISO(),
     tradeDateTime: date.toJSDate(),
-    currency: initialCurrency,
+    currency: "GBP",
     size: size,
     price: price,
     direction: size >= 0 ? 'buy' : 'sell',
-    convertOnCloseRate: convertRate,
+    convertOnCloseRate: 1,
     amounts: {
       consideration: {
         amountType: "CONSIDERATION",
-        currency: initialCurrency,
+        currency: "GBP",
         value: -(size * price)
       },
       commission: {
@@ -266,7 +264,7 @@ function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { s
       total: {
         amountType: "TOTAL_AMOUNT",
         currency: "GBP",
-        value: (-(size * price * convertRate)) - fees
+        value: (-(size * price)) - fees
       }
     },
     accountId: "1",

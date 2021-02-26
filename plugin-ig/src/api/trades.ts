@@ -70,7 +70,6 @@ function getAmounts(amounts: Amount[]): Amounts {
 
 export interface IGTradeGoodStuff<TDate=string, TNumber=string> {
   accountId: string
-  convertOnCloseRate: TNumber
   currency: string
   orderID: string
   price: TNumber
@@ -84,6 +83,7 @@ export type IGTrade<TDate=string, TNumber=string> = IGTradeGoodStuff<TDate, TNum
   instrumentDesc: string
   entryType: string
   narrative: string
+  convertOnCloseRate: TNumber
   orderType: string
   orderSize: TNumber
   scaledSize: TNumber
@@ -122,6 +122,7 @@ export interface IGLedgerHistoryResponse {
   error?: any
 }
 
+/** Load and sanitise all trades in a range for all accounts in session */
 export async function loadAllTrades(settings: Settings, session: SessionResult, startDateIso: string, endDateIso: string) {
   const trades: Trade[] = []
   for (const account of session.accounts) {
@@ -132,6 +133,7 @@ export async function loadAllTrades(settings: Settings, session: SessionResult, 
   return _.sortBy(trades, trade => trade.tradeDateTime.valueOf())
 }
 
+/** Load and sanitise all trades in a date range, converting all prices to the account currency (ie. GBP) and correcting any flaws in the data */
 export async function loadTrades(settings: Settings, account: AccountResult, startDateIso: string, endDateIso: string): Promise<Trade[]> {
   const dateFrom = DateTime.fromISO(startDateIso).toFormat(dateFormat)
   const dateTo = DateTime.fromISO(endDateIso).toFormat(dateFormat)
@@ -196,7 +198,6 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
       tradeType: t.tradeType,
 
       // Conversions
-      convertOnCloseRate: convertRate,
       currency: targetCurrency,
       price,
       size,

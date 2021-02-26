@@ -180,7 +180,6 @@ const simpleFromApi: IGTrade<string, string>[] = [
 const simpleSanitised: Trade[] = [
   {
     "accountId": "1",
-    "convertOnCloseRate": 0.7352395,
     "currency": "GBP",
     "direction": "buy",
     "stockId": "SA.D.AMD.CASH.IP",
@@ -221,7 +220,6 @@ const simpleSanitised: Trade[] = [
   },
   {
     "accountId": "1",
-    "convertOnCloseRate": 1,
     "currency": "GBP",
     "direction": "sell",
     "stockId": "KA.D.EQQQLN.CASH.IP",

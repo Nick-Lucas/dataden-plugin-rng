@@ -68,8 +68,8 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       const [trade] = allTrades.splice(0, 1)
       
       // Top level data
-      slice.cash = round(slice.cash + trade.amounts.total.value)
-      slice.feesPaid = round(slice.feesPaid + trade.amounts.charges.value + trade.amounts.commission.value)
+      slice.cash = slice.cash + trade.amounts.total.value
+      slice.feesPaid = slice.feesPaid + trade.amounts.charges.value + trade.amounts.commission.value
 
       editPosition(slice, trade.stockId, (current: Position) => {
         const position: Position = {
@@ -93,18 +93,18 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
           ? 0 
           : position.bookCost / position.size
 
-        position.latestPrice = trade.price
-        position.bookValue = position.size * trade.price
+        position.latestPrice = trade.price 
+        position.bookValue = (position.size * trade.price) 
 
         return position
       })
 
-      // Calculated data from positions
-      slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
-      slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
-
       slice.trades.push(trade)
     }
+
+    // Calculated data from positions
+    slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
+    slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
   }
   
   return portfolio.getSlices()
