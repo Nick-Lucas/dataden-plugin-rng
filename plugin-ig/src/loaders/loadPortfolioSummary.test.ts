@@ -5,6 +5,7 @@ import { AccountResult, SessionResult } from "../api/ig-auth";
 import type { FundingTransaction } from './loadFunding'
 import type { Trade } from '../api/trades'
 import { loadPortfolioSummary, PortfolioSlice } from './loadPortfolioSummary'
+import _ from "lodash";
 
 describe("loadPortfolioSummary", () => {
   let tradeData: Trade[] = []
@@ -36,8 +37,8 @@ describe("loadPortfolioSummary", () => {
   })
 
   it ("should mock modules correctly", async () => {
-    tradeData = []
     fundingData = []
+    tradeData = []
 
     const portfolioSummary = await subject(settings, session, console, new Date())
 
@@ -45,13 +46,13 @@ describe("loadPortfolioSummary", () => {
   })
 
   it ("should build a portfolio with funding only, rewound to the start of the first week", async () => {
-    tradeData = []
     fundingData = [
       getFunding(0, 5000),
       getFunding(1, -2600),
     ]
+    tradeData = []
 
-    const portfolioSummary = await subject(settings, session, console, fundingData[1].date)
+    const portfolioSummary = await subject(settings, session, console, getDate(1).toJSDate())
 
     expect(portfolioSummary).toEqual<PortfolioSlice[]>([
       getPortfolioSlice({
@@ -74,9 +75,46 @@ describe("loadPortfolioSummary", () => {
       })
     ])
   })
+
+  it ("should build a portfolio with trades, rewound to the start of the first week", async () => {
+    fundingData = [
+      getFunding(0, 5000),
+    ]
+    tradeData = [
+      getTrade(0, 0, "AMD", {
+        size: 100,
+        price: 10
+      })
+    ]
+
+    const portfolioSummary = await subject(settings, session, console, getDate(1).toJSDate())
+
+    expect(portfolioSummary).toEqual<PortfolioSlice[]>([
+      getPortfolioSlice({
+        uniqueId: getDate(-1).toISO(),
+        date: getDate(-1).toJSDate(),
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(0).toISO(),
+        date: getDate(0).toJSDate(),
+        netFunding: 5000,
+        cash: 4000,
+        bookCost: 1000,
+        trades: [tradeData[0]],
+        transactions: [fundingData[0]]
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(1).toISO(),
+        date: getDate(1).toJSDate(),
+        netFunding: 5000,
+        cash: 4000,
+        bookCost: 1000,
+      })
+    ])
+  })
 })
 
-function getDate(dayDelta, time: "time-zero" | 'time-set' = 'time-zero'): DateTime {
+function getDate(dayDelta: number, time: "time-zero" | 'time-set' = 'time-zero'): DateTime {
   const date = DateTime.fromISO("2020-06-15T00:00:00+00:00", { zone: "UTC" }).plus({
     days: dayDelta,
     hours: time === 'time-set' ? 8 : 0
@@ -87,7 +125,7 @@ function getDate(dayDelta, time: "time-zero" | 'time-set' = 'time-zero'): DateTi
   return date
 }
 
-function getFunding(dayDelta, amount = 0, { accountId = "1", currency = "GBP" }: Partial<FundingTransaction> = {}): FundingTransaction {
+function getFunding(dayDelta: number, amount = 0, { accountId = "1", currency = "GBP" }: Partial<FundingTransaction> = {}): FundingTransaction {
   const date = getDate(dayDelta, "time-set")
 
   return {
@@ -97,6 +135,54 @@ function getFunding(dayDelta, amount = 0, { accountId = "1", currency = "GBP" }:
     type: amount >= 0 ? 'Cash In' : 'Cash Out',
     amount,
     currency,
+  }
+}
+
+type getTradeOpts = Partial<{ size: number, price: number, fees: number, initialCurrency: "GBP" | "USD" }>
+function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { size = 1, price = 10, fees = 0, initialCurrency = "GBP" }: getTradeOpts): Trade {
+  if (hourDelta >= 16) {
+    throw "Hour delta would be the next day!"
+  }
+  const date = getDate(dayDelta, "time-set").plus({ hours: hourDelta })
+
+  const convertRate = initialCurrency === 'GBP' ? 1 : 0.75
+
+  return {
+    uniqueId: date.toISO(),
+    tradeDateTime: date.toJSDate(),
+    currency: initialCurrency,
+    size: size,
+    price: price,
+    direction: size >= 0 ? 'buy' : 'sell',
+    convertOnCloseRate: convertRate,
+    amounts: {
+      consideration: {
+        amountType: "CONSIDERATION",
+        currency: initialCurrency,
+        value: -(size * price)
+      },
+      commission: {
+        amountType: "COMMISSION",
+        currency: "GBP",
+        value: fees
+      },
+      charges: {
+        amountType: "TOTAL_CHARGE",
+        currency: "GBP",
+        value: 0
+      },
+      total: {
+        amountType: "TOTAL_AMOUNT",
+        currency: "GBP",
+        value: (-(size * price * convertRate)) - fees
+      }
+    },
+    accountId: "1",
+    orderID: "orderid",
+    stockId: stockId,
+    stockName: `${stockId} (Name)`,
+    stockAltName: `${stockId} (All Sessions)`,
+    tradeType: 'TRADE'
   }
 }
 
