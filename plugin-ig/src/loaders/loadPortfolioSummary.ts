@@ -26,6 +26,7 @@ export interface PortfolioSlice extends DataRow {
   cash: number
   bookCost: number
   bookValue: number
+  accountValue: number
   feesPaid: number
 
   trades: Trade[]
@@ -105,6 +106,7 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     // Calculated data from positions
     slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
     slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
+    slice.accountValue = slice.bookValue + slice.cash
   }
   
   return portfolio.getSlices()
@@ -135,8 +137,9 @@ class Portfolio {
       uniqueId: null,
       date: null,
       cash: 0,
-      bookValue: 0,
       bookCost: 0,
+      bookValue: 0,
+      accountValue: 0,
       netFunding: 0,
       feesPaid: 0,
       trades: [],

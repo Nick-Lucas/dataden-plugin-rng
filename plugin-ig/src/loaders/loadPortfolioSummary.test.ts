@@ -64,6 +64,7 @@ describe("loadPortfolioSummary", () => {
         date: getDate(0).toJSDate(),
         netFunding: 5000,
         cash: 5000,
+        accountValue: 5000,
         transactions: [fundingData[0]]
       }),
       getPortfolioSlice({
@@ -71,6 +72,7 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 2400,
         cash: 2400,
+        accountValue: 2400,
         transactions: [fundingData[1]]
       })
     ])
@@ -102,6 +104,7 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
         bookValue: 1000,
+        accountValue: 4997,
         feesPaid: 3,
         trades: [tradeData[0]],
         transactions: [fundingData[0]],
@@ -123,6 +126,7 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
         bookValue: 1000,
+        accountValue: 4997,
         feesPaid: 3,
         positions: {
           "AMD": {
@@ -169,6 +173,7 @@ describe("loadPortfolioSummary", () => {
         cash: 5194,
         bookCost: 0,
         bookValue: 0,
+        accountValue: 5194,
         feesPaid: 6,
         trades: [tradeData[0], tradeData[1]],
         transactions: [fundingData[0]],
@@ -188,6 +193,7 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 5000,
         cash: 5194,
+        accountValue: 5194,
         bookCost: 0,
         bookValue: 0,
         feesPaid: 6,
@@ -285,6 +291,7 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       cash: 0,
       bookCost: 0,
       bookValue: 0,
+      accountValue: 0,
       feesPaid: 0,
       trades: [],
       transactions: [],
