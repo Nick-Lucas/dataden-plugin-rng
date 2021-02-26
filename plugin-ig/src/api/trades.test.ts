@@ -94,14 +94,14 @@ const simpleFromApi: IGTrade<string, string>[] = [
         "transactionToBaseCcyRate": null
       },
       {
-        "value": 0,
-        "currency": "GBP",
+        "value": -3,
+        "currency": "USD",
         "amountType": "COMMISSION",
         "transactionToBaseCcyRate": null
       },
       {
         "value": 0,
-        "currency": "GBP",
+        "currency": "USD",
         "amountType": "TOTAL_CHARGE",
         "transactionToBaseCcyRate": null
       },
@@ -181,23 +181,23 @@ const simpleSanitised: Trade[] = [
   {
     "accountId": "1",
     "convertOnCloseRate": 0.7352395,
-    "currency": "USD",
+    "currency": "GBP",
     "direction": "buy",
     "stockId": "SA.D.AMD.CASH.IP",
     "stockName": "Advanced Micro Devices Inc",
     "stockAltName": "Advanced Micro Devices Inc (All Sessions)",
     "orderID": "ORDER_ID_FIELD",
-    "price": 84.91,
+    "price": 62.43,
     "size": 8,
     "amounts": {
       consideration: {
-        "value": -679.28,
-        "currency": "USD",
+        "value": -499.43348756,
+        "currency": "GBP",
         "amountType": "CONSIDERATION",
         "transactionToBaseCcyRate": null
       },
       commission: {
-        "value": 0,
+        "value": -2.2057185,
         "currency": "GBP",
         "amountType": "COMMISSION",
         "transactionToBaseCcyRate": null

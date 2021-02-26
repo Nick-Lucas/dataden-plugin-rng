@@ -157,6 +157,8 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
   return result.data.payload.txnHistory.map(t => {
     const isBuy = float(t.scaledSize) >= 0
     const amounts: Amounts = getAmounts(t.amounts)
+    const convertRate = float(t.convertOnCloseRate)
+    const targetCurrency = amounts.total.currency
 
     // IG BUG: repair sign on final amounts, which is sometimes wrong
     amounts.consideration.value = isBuy
@@ -165,6 +167,19 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
     amounts.total.value = isBuy
       ? -Math.abs(amounts.total.value)
       : Math.abs(amounts.total.value)
+
+    if (amounts.consideration.currency !== amounts.total.currency) {
+      amounts.consideration.value = amounts.consideration.value * convertRate
+      amounts.consideration.currency = amounts.total.currency
+    }
+    if (amounts.charges.currency !== amounts.total.currency) {
+      amounts.charges.value = amounts.charges.value * convertRate
+      amounts.charges.currency = amounts.total.currency
+    }
+    if (amounts.commission.currency !== amounts.total.currency) {
+      amounts.commission.value = amounts.commission.value * convertRate
+      amounts.commission.currency = amounts.total.currency
+    }
 
     const size = float(t.scaledSize)
     const price = round(Math.abs(amounts.consideration.value / size))
@@ -181,8 +196,8 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
       tradeType: t.tradeType,
 
       // Conversions
-      convertOnCloseRate: float(t.convertOnCloseRate),
-      currency: t.currency,
+      convertOnCloseRate: convertRate,
+      currency: targetCurrency,
       price,
       size,
       tradeDateTime: dateFromComponents(t.tradeDate, t.tradeTime),
