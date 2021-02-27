@@ -4,15 +4,21 @@ import { AccountResult, SessionResult } from "../api/ig-auth";
 
 import type { FundingTransaction } from './loadFunding'
 import type { Trade } from '../api/trades'
+import type { BetsPNL } from '../api/bets-pnl'
 import { loadPortfolioSummary, PortfolioSlice } from './loadPortfolioSummary'
 import _ from "lodash";
 
 describe("loadPortfolioSummary", () => {
   let tradeData: Trade[] = []
   let fundingData: FundingTransaction[] = []
+  let betsPnl: BetsPNL[] = []
   let subject: typeof loadPortfolioSummary
 
   beforeEach(async () => {
+    fundingData = []
+    tradeData = []
+    betsPnl = []
+
     jest.resetModules()
 
     jest.doMock('./loadFunding', () => {
@@ -27,6 +33,12 @@ describe("loadPortfolioSummary", () => {
         loadAllTrades: () => Promise.resolve([...tradeData])
       }
     })
+    jest.doMock('../api/bets-pnl', () => {
+      return {
+        __esModule: true,
+        loadAllBetsPNL: () => Promise.resolve([...betsPnl])
+      }
+    })
 
     subject = (await import('./loadPortfolioSummary')).loadPortfolioSummary
   })
@@ -39,6 +51,7 @@ describe("loadPortfolioSummary", () => {
   it ("should mock modules correctly", async () => {
     fundingData = []
     tradeData = []
+    betsPnl = []
 
     const portfolioSummary = await subject(settings, session, console, new Date())
 
@@ -62,6 +75,7 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
+        currency: "GBP",
         netFunding: 5000,
         cash: 5000,
         accountValue: 5000,
@@ -70,10 +84,49 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
+        currency: "GBP",
         netFunding: 2400,
         cash: 2400,
         accountValue: 2400,
         transactions: [fundingData[1]]
+      })
+    ])
+  })
+
+  it ("should adjust cash levels based on spread/cfd bets PNL", async () => {
+    fundingData = [
+      getFunding(0, 5000)
+    ]
+    tradeData = []
+    betsPnl = [
+      getBetPNL(0, 4, -1000),
+      getBetPNL(1, 0, 500)
+    ]
+
+    const portfolioSummary = await subject(settings, session, console, getDate(1).toJSDate())
+
+    expect(portfolioSummary).toEqual<PortfolioSlice[]>([
+      getPortfolioSlice({
+        uniqueId: getDate(-1).toISO(),
+        date: getDate(-1).toJSDate(),
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(0).toISO(),
+        date: getDate(0).toJSDate(),
+        currency: "GBP",
+        netFunding: 5000,
+        cash: 4000,
+        accountValue: 4000,
+        transactions: [fundingData[0]]
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(1).toISO(),
+        date: getDate(1).toJSDate(),
+        currency: "GBP",
+        netFunding: 5000,
+        cash: 4500,
+        accountValue: 4500,
+        transactions: []
       })
     ])
   })
@@ -100,6 +153,7 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
+        currency: "GBP",
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
@@ -124,6 +178,7 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
+        currency: "GBP",
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
@@ -173,6 +228,7 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
+        currency: "GBP",
         netFunding: 5000,
         cash: 5194,
         bookCost: 0,
@@ -197,6 +253,7 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
+        currency: "GBP",
         netFunding: 5000,
         cash: 5194,
         accountValue: 5194,
@@ -241,6 +298,20 @@ function getFunding(dayDelta: number, amount = 0, { accountId = "1", currency = 
     type: amount >= 0 ? 'Cash In' : 'Cash Out',
     amount,
     currency,
+  }
+}
+
+function getBetPNL(dayDelta: number, hourDelta: number, amount = 0, { accountId = "2", currency = "GBP" } = {}): BetsPNL {
+  const date = getDate(dayDelta, "time-set").plus({ hours: hourDelta })
+
+  return {
+    uniqueId: `${date.toISO()}_${accountId}`,
+    accountId: accountId,
+    date: date.toJSDate(),
+    currency: currency,
+    value: amount,
+    closedPositions: 1,
+    profitablePositions: 0,
   }
 }
 
@@ -295,6 +366,7 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
     {
       uniqueId: getDate(0).toISO(),
       date: getDate(0).toJSDate(),
+      currency: "Unknown",
       netFunding: 0,
       cash: 0,
       bookCost: 0,

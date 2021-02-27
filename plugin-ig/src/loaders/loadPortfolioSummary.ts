@@ -3,10 +3,10 @@ import _ from "lodash"
 import { DateTime, Duration } from "luxon";
 
 import { Settings } from "../types"
-import { round } from "../converters";
 import { SessionResult } from "../api/ig-auth"
 import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
+import { loadAllBetsPNL, BetsPNL } from "../api/bets-pnl"
 
 export interface Position {
   stockId: string
@@ -25,6 +25,7 @@ export interface Position {
 export interface PortfolioSlice extends DataRow {
   date: Date
   
+  currency: string
   netFunding: number
   cash: number
   bookCost: number
@@ -40,9 +41,13 @@ export interface PortfolioSlice extends DataRow {
 export const loadPortfolioSummary = async (settings: Settings, session: SessionResult, log: SdkLogger, toDate: Date): Promise<PortfolioSlice[]> => {
   log.info(`Loading Portfolio for Stockbroking accounts`)
 
+  const dateFromIso = settings.plugin.backdateToISO
+  const dateToIso = new Date().toISOString()
+
   const allFunding = await loadFunding(settings, session, log)
-  const allTrades = await loadAllTrades(settings, session, settings.plugin.backdateToISO, new Date().toISOString())
-  if (allFunding.length === 0 && allTrades.length === 0) {
+  const allTrades = await loadAllTrades(settings, session, dateFromIso, dateToIso)
+  const allBets = await loadAllBetsPNL(settings, session, log, dateFromIso, dateToIso)
+  if (allFunding.length === 0 && allTrades.length === 0 && allBets.length === 0) {
     log.warn(`No trading data retrieved`)
     return []
   }
@@ -62,14 +67,19 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
 
     while (allFunding.length > 0 && allFunding[0].date.valueOf() < cursor.right().valueOf()) {
       const [funding] = allFunding.splice(0, 1)
-      slice.cash = round(slice.cash + funding.amount)
-      slice.netFunding = round(slice.netFunding + funding.amount)
+      slice.cash = slice.cash + funding.amount
+      slice.netFunding = slice.netFunding + funding.amount
+
+      slice.currency = funding.currency
 
       slice.transactions.push(funding)
     }
 
     while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < cursor.right().valueOf()) {
       const [trade] = allTrades.splice(0, 1)
+      if (trade.amounts.total.currency !== slice.currency) {
+        throw "Unexpected Error: Currency in trade does not match funding currency"
+      }
       
       // Top level data
       slice.cash = slice.cash + trade.amounts.total.value
@@ -108,6 +118,17 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       slice.trades.push(trade)
     }
 
+    while (allBets.length > 0 && allBets[0].date.valueOf() < cursor.right().valueOf()) {
+      const [pnl] = allBets.splice(0, 1)
+
+      if (pnl.currency !== slice.currency) {
+        throw "Unexpected Error: Currency in bet pnl does not match funding currency"
+      }
+
+      // TODO: move cash in to a separate collateral bucket for spread/cfd trading accounts
+      slice.cash += pnl.value
+    }
+
     // Calculated data from positions
     slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
     slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
@@ -143,6 +164,7 @@ class Portfolio {
     return {
       uniqueId: null,
       date: null,
+      currency: "Unknown",
       cash: 0,
       bookCost: 0,
       bookValue: 0,

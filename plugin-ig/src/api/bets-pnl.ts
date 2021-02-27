@@ -11,6 +11,7 @@ const dateFormat = "yyyy-MM-dd"
 
 export interface IGBetsPNL<TDate=Date> {
   date: TDate
+  currency: string
   value: number
   closedPositions: number
   profitablePositions: number
@@ -51,7 +52,6 @@ export async function loadBetsPNL(settings: Settings, account: AccountResult, lo
   log.info(`Loading PNL for account ${account.accountId}`)
 
   try {
-
     const result = await axios.get<ApiResponse>(
       `/uk/myig/api/client-performance/charts/pnlDaily`,
        {
@@ -77,6 +77,7 @@ export async function loadBetsPNL(settings: Settings, account: AccountResult, lo
         uniqueId: `${t.date}_${account.accountId}`,
         accountId: account.accountId,
         date: date(t.date, "yyyy-MM-dd"),
+        currency: result.data.currency
       }
     })
   } catch (e) {
