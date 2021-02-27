@@ -75,7 +75,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 5000,
         accountValue: 5000,
@@ -84,7 +83,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        currency: "GBP",
         netFunding: 2400,
         cash: 2400,
         accountValue: 2400,
@@ -113,20 +111,20 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 4000,
         accountValue: 4000,
-        transactions: [fundingData[0]]
+        transactions: [fundingData[0]],
+        betPnls: [betsPnl[0]]
       }),
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 4500,
         accountValue: 4500,
-        transactions: []
+        transactions: [],
+        betPnls: [betsPnl[1]]
       })
     ])
   })
@@ -153,7 +151,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
@@ -178,7 +175,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
@@ -228,7 +224,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 5194,
         bookCost: 0,
@@ -253,7 +248,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        currency: "GBP",
         netFunding: 5000,
         cash: 5194,
         accountValue: 5194,
@@ -366,7 +360,6 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
     {
       uniqueId: getDate(0).toISO(),
       date: getDate(0).toJSDate(),
-      currency: "Unknown",
       netFunding: 0,
       cash: 0,
       bookCost: 0,
@@ -375,6 +368,7 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       feesPaid: 0,
       trades: [],
       transactions: [],
+      betPnls: [],
       positions: {}
     }, 
     slice

@@ -25,7 +25,6 @@ export interface Position {
 export interface PortfolioSlice extends DataRow {
   date: Date
   
-  currency: string
   netFunding: number
   cash: number
   bookCost: number
@@ -35,6 +34,7 @@ export interface PortfolioSlice extends DataRow {
 
   trades: Trade[]
   transactions: FundingTransaction[]
+  betPnls: BetsPNL[]
   positions: Record<string, Position>
 }
 
@@ -70,17 +70,12 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       slice.cash = slice.cash + funding.amount
       slice.netFunding = slice.netFunding + funding.amount
 
-      slice.currency = funding.currency
-
       slice.transactions.push(funding)
     }
 
     while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < cursor.right().valueOf()) {
       const [trade] = allTrades.splice(0, 1)
-      if (trade.amounts.total.currency !== slice.currency) {
-        throw "Unexpected Error: Currency in trade does not match funding currency"
-      }
-      
+
       // Top level data
       slice.cash = slice.cash + trade.amounts.total.value
       slice.feesPaid = slice.feesPaid + trade.amounts.charges.value + trade.amounts.commission.value
@@ -121,12 +116,10 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     while (allBets.length > 0 && allBets[0].date.valueOf() < cursor.right().valueOf()) {
       const [pnl] = allBets.splice(0, 1)
 
-      if (pnl.currency !== slice.currency) {
-        throw "Unexpected Error: Currency in bet pnl does not match funding currency"
-      }
-
       // TODO: move cash in to a separate collateral bucket for spread/cfd trading accounts
       slice.cash += pnl.value
+
+      slice.betPnls.push(pnl)
     }
 
     // Calculated data from positions
@@ -164,7 +157,6 @@ class Portfolio {
     return {
       uniqueId: null,
       date: null,
-      currency: "Unknown",
       cash: 0,
       bookCost: 0,
       bookValue: 0,
@@ -173,6 +165,7 @@ class Portfolio {
       feesPaid: 0,
       trades: [],
       transactions: [],
+      betPnls: [],
       positions: {}
     }
   }
@@ -186,6 +179,7 @@ class Portfolio {
     slice.date = date.toJSDate()
     slice.trades = []
     slice.transactions = []
+    slice.betPnls = []
     slice.positions = _.cloneDeep(slice.positions)
   
     return slice
