@@ -6,7 +6,7 @@ import { generateBatches } from "./generateBatches";
 
 import { getSession } from "./api/ig-auth";
 import { Transaction, loadTransactions } from "./api/transactions";
-import { Trade, loadTrades } from "./api/trades";
+import { loadAllBetsPNL } from "./api/bets-pnl";
 
 import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
@@ -57,46 +57,18 @@ export default createPlugin({
     //     }
     //   }
     // },
-    // {
-    //   name: 'trades',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     let trades = []
-    //     for (const account of session.accounts) {
-    //       const accountTrades = await loadTrades(
-    //         settings, 
-    //         account, 
-    //         settings.plugin.backdateToISO, 
-    //         new Date().toISOString())
-
-    //       trades.push(...accountTrades)
-    //     }
-
-    //     return {
-    //       mode: 'append',
-    //       data: trades,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
     {
-      name: 'portfolio_summary',
+      name: 'bets_pnl',
       load: async (_settings, request, log) => {
         const settings = (_settings as unknown) as Settings
 
         const session = await getSession(settings as Settings, log)
 
-        const summary = await loadPortfolioSummary(settings, session, log, new Date())
+        let pnl = await loadAllBetsPNL(settings, session, log, settings.plugin.backdateToISO, new Date().toISOString())
 
         return {
           mode: 'append',
-          data: summary,
+          data: pnl,
           syncInfo: {
             success: true,
             rehydrationData: {}
@@ -104,6 +76,25 @@ export default createPlugin({
         }
       }
     },
+    // {
+    //   name: 'portfolio_summary',
+    //   load: async (_settings, request, log) => {
+    //     const settings = (_settings as unknown) as Settings
+
+    //     const session = await getSession(settings as Settings, log)
+
+    //     const summary = await loadPortfolioSummary(settings, session, log, new Date())
+
+    //     return {
+    //       mode: 'append',
+    //       data: summary,
+    //       syncInfo: {
+    //         success: true,
+    //         rehydrationData: {}
+    //       }
+    //     }
+    //   }
+    // },
   ]
 })
 
