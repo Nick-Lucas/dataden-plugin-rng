@@ -81,7 +81,7 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       slice.feesPaid = slice.feesPaid + trade.amounts.charges.value + trade.amounts.commission.value
 
       editPosition(slice, trade.stockId, (current: Position) => {
-        const position: Position = {
+        const next: Position = {
           stockId: trade.stockId,
           stockName: trade.stockName,
           stockAltName: trade.stockAltName,
@@ -91,23 +91,30 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
           bookValue: 0,
           latestPrice: 0
         }
-        
+
+        const newSize = current.size + trade.size
+
         if (trade.direction === 'buy') {
-          position.bookCost = position.bookCost - trade.amounts.total.value
+          // Simple sum when buying
+          next.bookCost = current.bookCost - trade.amounts.total.value
         } else {
-          position.bookCost = position.bookCost + (trade.size * position.averagePrice)
+          if (newSize === 0) {
+            // Tiny float errors, or simply leftovers due to conversions, do accrue, but we don't generally mind until this point
+            next.bookCost = 0
+          } else {
+            // When selling subtract a proportional amount relative to the book cost
+            next.bookCost = current.bookCost + (trade.size * current.averagePrice)
+          }
         }
         
-        position.size = current.size + trade.size
-        
-        position.averagePrice = position.size === 0 
+        next.size = newSize
+        next.averagePrice = newSize === 0 
           ? 0 
-          : position.bookCost / position.size
+          : next.bookCost / newSize
+        next.bookValue = (newSize * trade.price) 
+        next.latestPrice = trade.price 
 
-        position.latestPrice = trade.price 
-        position.bookValue = (position.size * trade.price) 
-
-        return position
+        return next
       })
 
       slice.trades.push(trade)
