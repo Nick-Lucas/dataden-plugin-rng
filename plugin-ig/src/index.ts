@@ -10,8 +10,6 @@ import { Trade, loadTrades } from "./api/trades";
 
 import { loadFunding } from "./loaders/loadFunding";
 import { loadUser } from "./loaders/loadUser";
-import { loadStockTrades } from "./loaders/loadStockTrades";
-import { loadPortfolio } from "./loaders/loadPortfolio";
 import { loadPortfolioSummary } from "./loaders/loadPortfolioSummary";
 
 
@@ -52,25 +50,6 @@ export default createPlugin({
     //           ...user
     //         }
     //       ],
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
-    // {
-    //   name: 'funding',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     const funding = await loadFunding(settings, session, log)
-
-    //     return {
-    //       mode: 'append',
-    //       data: funding,
     //       syncInfo: {
     //         success: true,
     //         rehydrationData: {}
@@ -125,87 +104,6 @@ export default createPlugin({
         }
       }
     },
-    // {
-    //   name: 'portfolio',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     const portfolio = await loadPortfolio(settings, session, log)
-
-    //     return {
-    //       mode: 'append',
-    //       data: portfolio,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
-    // {
-    //   name: 'transactions',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     let rehydrationData = calculateBatches(settings, request, log);
-
-    //     let allTransactions: Transaction[] = []
-    //     const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
-    //     while (remainingBatches.length > 0) {
-    //       const batch = remainingBatches.pop()
-
-    //       const transactions = await loadTransactions(settings, session, batch.dateFromISO, batch.dateToISO)
-
-    //       allTransactions.push(...transactions)
-    //     }
-
-    //     rehydrationData.lastDate = (_.last(allTransactions)?.dateUtc ?? new Date()).toISOString()
-
-    //     return {
-    //       mode: 'append',
-    //       data: allTransactions,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData
-    //       }
-    //     }
-    //   }
-    // },
-    // {
-    //   name: 'trades',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     let rehydrationData = calculateBatches(settings, request, log);
-
-    //     let allTrades: Trade[] = []
-    //     const remainingBatches = _.sortBy(rehydrationData.pending, batch => batch.dateFromISO).reverse()
-    //     while (remainingBatches.length > 0) {
-    //       const batch = remainingBatches.pop()
-
-    //       const trades = await loadTrades(settings, session, batch.dateFromISO, batch.dateToISO)
-
-    //       allTrades.push(...trades)
-    //     }
-
-    //     rehydrationData.lastDate = (_.last(allTrades)?.tradeDate ?? new Date()).toISOString()
-
-    //     return {
-    //       mode: 'append',
-    //       data: allTrades,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData
-    //       }
-    //     }
-    //   }
-    // }
   ]
 })
 
