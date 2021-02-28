@@ -228,7 +228,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 10,
             dailyLowPrice: 0,
             dailyHighPrice: 0,
-            dailyMedianPrice: 0
+            dailyMedianPrice: 0,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       }),
@@ -261,7 +264,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 10,
             dailyLowPrice: 0,
             dailyHighPrice: 0,
-            dailyMedianPrice: 0
+            dailyMedianPrice: 0,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       })
@@ -338,7 +344,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 10,
             dailyLowPrice: 9,
             dailyHighPrice: 11,
-            dailyMedianPrice: 10
+            dailyMedianPrice: 10,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       }),
@@ -371,7 +380,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 10,
             dailyLowPrice: 90,
             dailyHighPrice: 110,
-            dailyMedianPrice: 100
+            dailyMedianPrice: 100,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       })
@@ -433,7 +445,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 12,
             dailyLowPrice: 0,
             dailyHighPrice: 0,
-            dailyMedianPrice: 0
+            dailyMedianPrice: 0,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       }),
@@ -466,7 +481,10 @@ describe("loadPortfolioSummary", () => {
             latestTradePrice: 12,
             dailyLowPrice: 0,
             dailyHighPrice: 0,
-            dailyMedianPrice: 0
+            dailyMedianPrice: 0,
+            meta: {
+              latestCurrencyConversion: 1
+            }
           }
         }
       })
@@ -547,6 +565,10 @@ function getTrade(dayDelta: number, hourDelta: number, stockId = 'My Stock', { s
         amountType: "TOTAL_AMOUNT",
         currency: "GBP",
         value: (-(size * price)) - fees
+      },
+      conversions: {
+        originalCurrency: "GBP",
+        conversionRate: 1
       }
     },
     accountId: "1",

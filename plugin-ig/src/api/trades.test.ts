@@ -212,7 +212,11 @@ const simpleSanitised: Trade[] = [
         "currency": "GBP",
         "amountType": "TOTAL_AMOUNT",
         "transactionToBaseCcyRate": null
-      }
+      },
+      conversions: {
+        "conversionRate": 0.7352395,
+        "originalCurrency": "USD",
+      },
     },
     "tradeDateTime": new Date("2019-02-01T14:57:12.000Z"),
     "tradeType": "TRADE",
@@ -252,7 +256,11 @@ const simpleSanitised: Trade[] = [
         "currency": "GBP",
         "amountType": "TOTAL_AMOUNT",
         "transactionToBaseCcyRate": null
-      }
+      },
+      conversions: {
+        "conversionRate": 1,
+        "originalCurrency": "GBP",
+      },
     },
     "tradeType": "TRADE",
     "uniqueId": "NASDAQ_ORDERID",

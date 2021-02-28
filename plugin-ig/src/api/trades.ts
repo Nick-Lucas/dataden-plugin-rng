@@ -41,6 +41,12 @@ export interface Amounts {
 
   /** final sum in the account's native currency, with fees and commissions applied */
   total: Amount
+
+  /** Although all currencies are converted, it's sometimes useful to track the conversion info */
+  conversions: {
+    originalCurrency: string
+    conversionRate: number
+  }
 }
 
 function getAmounts(amounts: Amount[]): Amounts {
@@ -65,6 +71,10 @@ function getAmounts(amounts: Amount[]): Amounts {
       amountType: "TOTAL_AMOUNT",
       currency: "GBP"
     },
+    conversions: {
+      originalCurrency: null,
+      conversionRate: 1
+    }
   }
 }
 
@@ -161,6 +171,9 @@ export async function loadTrades(settings: Settings, account: AccountResult, sta
     const amounts: Amounts = getAmounts(t.amounts)
     const convertRate = float(t.convertOnCloseRate)
     const targetCurrency = amounts.total.currency
+
+    amounts.conversions.originalCurrency = amounts.consideration.currency
+    amounts.conversions.conversionRate = convertRate
 
     // IG BUG: repair sign on final amounts, which is sometimes wrong
     amounts.consideration.value = isBuy

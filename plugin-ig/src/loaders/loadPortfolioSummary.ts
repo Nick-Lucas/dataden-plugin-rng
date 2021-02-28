@@ -23,6 +23,11 @@ export interface Position {
   dailyHighPrice: number
   dailyLowPrice: number
   dailyMedianPrice: number
+
+  meta: {
+    /** Trades are converted to the account currency before reaching here, but sometimes teh conversion factor is required for other needs, such as historical prices */
+    latestCurrencyConversion: number
+  }
 }
 
 export interface PortfolioSlice extends DataRow {
@@ -137,7 +142,10 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
           latestTradePrice: 0,
           dailyHighPrice: 0,
           dailyLowPrice: 0,
-          dailyMedianPrice: 0
+          dailyMedianPrice: 0,
+          meta: {
+            latestCurrencyConversion: trade.amounts.conversions.conversionRate
+          }
         }
 
         const newSize = current.size + trade.size
@@ -180,9 +188,16 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
         continue
       }
 
-      position.dailyHighPrice = price.high
-      position.dailyLowPrice = price.low
-      position.dailyMedianPrice = (price.high + price.low) / 2
+      // Historical pricing is in the market's own currency, and without conversion data or currency info, 
+      //  so this is a best guess, without having to load up the entire FX history for conversion
+      let conversion = 1
+      if (position.meta.latestCurrencyConversion != 0) {
+        conversion = position.meta.latestCurrencyConversion
+      }
+
+      position.dailyHighPrice = price.high * conversion
+      position.dailyLowPrice = price.low * conversion
+      position.dailyMedianPrice = ((price.high + price.low) / 2) * conversion
     }
 
     // 
@@ -230,7 +245,11 @@ function editPosition(slice: PortfolioSlice, stockId: string, callback: (positio
       latestTradePrice: 0,
       dailyLowPrice: 0,
       dailyHighPrice: 0,
-      dailyMedianPrice: 0
+      dailyMedianPrice: 0,
+
+      meta: {
+        latestCurrencyConversion: 0
+      }
     }
     
   slice.positions[stockId] = callback(currentPosition)
