@@ -33,49 +33,30 @@ export default createPlugin({
     } as Settings) as any
   },
   loaders: [
-    // {
-    //   name: 'user',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
+    {
+      name: 'user',
+      load: async (_settings, request, log) => {
+        const settings = (_settings as unknown) as Settings
 
-    //     const session = await getSession(settings as Settings, log)
+        const session = await getSession(settings as Settings, log)
 
-    //     const user = await loadUser(session)
+        const user = await loadUser(session)
 
-    //     return {
-    //       mode: 'append',
-    //       data: [
-    //         {
-    //           uniqueId: 'session',
-    //           ...user
-    //         }
-    //       ],
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
-    // {
-    //   name: 'bets_pnl',
-    //   load: async (_settings, request, log) => {
-    //     const settings = (_settings as unknown) as Settings
-
-    //     const session = await getSession(settings as Settings, log)
-
-    //     let pnl = await loadAllBetsPNL(settings, session, log, settings.plugin.backdateToISO, new Date().toISOString())
-
-    //     return {
-    //       mode: 'append',
-    //       data: pnl,
-    //       syncInfo: {
-    //         success: true,
-    //         rehydrationData: {}
-    //       }
-    //     }
-    //   }
-    // },
+        return {
+          mode: 'replace',
+          data: [
+            {
+              uniqueId: 'session',
+              ...user
+            }
+          ],
+          syncInfo: {
+            success: true,
+            rehydrationData: {}
+          }
+        }
+      }
+    },
     {
       name: 'portfolio_summary',
       load: async (_settings, request, log) => {
@@ -86,7 +67,7 @@ export default createPlugin({
         const summary = await loadPortfolioSummary(settings, session, log, new Date())
 
         return {
-          mode: 'append',
+          mode: 'replace',
           data: summary,
           syncInfo: {
             success: true,
