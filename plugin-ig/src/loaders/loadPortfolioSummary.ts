@@ -7,6 +7,7 @@ import { SessionResult } from "../api/ig-auth"
 import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
 import { loadAllBetsPNL, BetsPNL } from "../api/bets-pnl"
+import { loadPrices, Price } from "../api/prices";
 
 export interface Position {
   stockId: string
@@ -58,12 +59,49 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
   ].filter(Boolean)))
 
   const cursor = new DateRangeCursor(minDate, toDate, Duration.fromObject({day: 1}))
+
   
   log.info(`Starting to build portfolio from ${cursor.left().toISO()} to ${toDate.toISOString()}`)
+  
+  const allPriceHistories: Record<string, Price[]> = {}
+  const getPrice = async (stockId: string, tradeDate: Date, returnPrice = false): Promise<Price | null> => {
+    if (!allPriceHistories[stockId]) {
+      const pricesByStockId = await loadPrices(
+        settings, log, session.accounts[0].xSecurityToken, 
+        tradeDate.toISOString(), toDate.toISOString(), 
+        "sell", [stockId])
+
+      Object.assign(allPriceHistories, pricesByStockId)
+    }
+
+    if (!returnPrice) {
+      return null
+    }
+
+    const prices = allPriceHistories[stockId]
+    if (!prices?.length) {
+      return null
+    }
+
+    // TODO: switch this out for a less naive binary search
+    // Get the newest price which is before the current trade date
+    let price: Price = null
+    for (const element of prices) {
+      if (element.startDate.valueOf() > tradeDate.valueOf()) {
+        break
+      }
+      price = element
+    }
+
+    return price
+  }
 
   const portfolio = new Portfolio()
   while (cursor.next()) {
     const slice = portfolio.getNextSlice(cursor.left())
+
+    // 
+    // Update cash holdings with new funding movements
 
     while (allFunding.length > 0 && allFunding[0].date.valueOf() < cursor.right().valueOf()) {
       const [funding] = allFunding.splice(0, 1)
@@ -73,8 +111,30 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
       slice.transactions.push(funding)
     }
 
+    // 
+    // Update all portfolio positions with latest prices
+
+    for (const position of Object.values(slice.positions)) {
+      if (position.size === 0) {
+        continue
+      }
+
+      const price = await getPrice(position.stockId, slice.date, true)
+      if (!price) {
+        continue
+      }
+
+      position.latestPrice = price.high
+      position.bookValue = price.high * position.size
+    }
+
+    // 
+    // Add new trades to portfolios
+
     while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < cursor.right().valueOf()) {
       const [trade] = allTrades.splice(0, 1)
+
+      const historicalPrice = await getPrice(trade.stockId, trade.tradeDateTime)
 
       // Top level data
       slice.cash = slice.cash + trade.amounts.total.value
@@ -90,6 +150,11 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
           size: 0,
           bookValue: 0,
           latestPrice: 0
+        }
+
+        let newPrice = trade.price
+        if (historicalPrice != null) {
+          newPrice = historicalPrice.high
         }
 
         const newSize = current.size + trade.size
@@ -111,14 +176,17 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
         next.averagePrice = newSize === 0 
           ? 0 
           : next.bookCost / newSize
-        next.bookValue = (newSize * trade.price) 
-        next.latestPrice = trade.price 
+        next.bookValue = (newSize * newPrice) 
+        next.latestPrice = newPrice 
 
         return next
       })
 
       slice.trades.push(trade)
     }
+
+    // 
+    // Adjust cash balances with margin bets PNL
 
     while (allBets.length > 0 && allBets[0].date.valueOf() < cursor.right().valueOf()) {
       const [pnl] = allBets.splice(0, 1)

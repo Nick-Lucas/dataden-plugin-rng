@@ -76,16 +76,22 @@ export async function loadPrices(
   const priceBatchPromises = batches.map<Promise<[epic: string, prices: Price[]]>>(async ({ epic, yearStart, yearEnd }) => {
     const result = await apiRequest(settings, xSecurityToken, epic, yearStart, yearEnd)
     
-    const prices = result.data.intervalsDataPoints.map<Price>(day => {
-      return {
-        startDate: new Date(day.startTimestamp),
-        endDate: new Date(day.endTimestamp),
-        open: day.dataPoints[0].openPrice[priceKey],
-        close: day.dataPoints[0].closePrice[priceKey],
-        high: day.dataPoints[0].highPrice[priceKey],
-        low: day.dataPoints[0].lowPrice[priceKey],
-      }
-    })
+    const prices = result.data.intervalsDataPoints
+      .map<Price>(day => {
+        if (!day.dataPoints?.length) {
+          return null
+        }
+
+        return {
+          startDate: new Date(day.startTimestamp),
+          endDate: new Date(day.endTimestamp),
+          open: day.dataPoints[0].openPrice[priceKey] / 100,
+          close: day.dataPoints[0].closePrice[priceKey] / 100,
+          high: day.dataPoints[0].highPrice[priceKey] / 100,
+          low: day.dataPoints[0].lowPrice[priceKey] / 100,
+        }
+      })
+      .filter(Boolean)
 
     return [
       epic,

@@ -5,6 +5,7 @@ import { AccountResult, SessionResult } from "../api/ig-auth";
 import type { FundingTransaction } from './loadFunding'
 import type { Trade } from '../api/trades'
 import type { BetsPNL } from '../api/bets-pnl'
+import type { Price } from '../api/prices'
 import { loadPortfolioSummary, PortfolioSlice } from './loadPortfolioSummary'
 import _ from "lodash";
 
@@ -12,12 +13,14 @@ describe("loadPortfolioSummary", () => {
   let tradeData: Trade[] = []
   let fundingData: FundingTransaction[] = []
   let betsPnl: BetsPNL[] = []
+  let historicalPrices: Record<string, Price[]> = {}
   let subject: typeof loadPortfolioSummary
 
   beforeEach(async () => {
     fundingData = []
     tradeData = []
     betsPnl = []
+    historicalPrices = {}
 
     jest.resetModules()
 
@@ -37,6 +40,12 @@ describe("loadPortfolioSummary", () => {
       return {
         __esModule: true,
         loadAllBetsPNL: () => Promise.resolve([...betsPnl])
+      }
+    })
+    jest.doMock('../api/prices', () => {
+      return {
+        __esModule: true,
+        loadPrices: () => Promise.resolve({...historicalPrices})
       }
     })
 
