@@ -86,7 +86,15 @@ describe("loadPortfolioSummary", () => {
         date: getDate(0).toJSDate(),
         netFunding: 5000,
         cash: 5000,
-        accountValue: 5000,
+      
+        accountValueHigh: 5000,
+        accountValueLow: 5000,
+        accountValueMedian: 5000,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         transactions: [fundingData[0]]
       }),
       getPortfolioSlice({
@@ -94,7 +102,15 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 2400,
         cash: 2400,
-        accountValue: 2400,
+      
+        accountValueHigh: 2400,
+        accountValueLow: 2400,
+        accountValueMedian: 2400,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         transactions: [fundingData[1]]
       })
     ])
@@ -122,7 +138,15 @@ describe("loadPortfolioSummary", () => {
         date: getDate(0).toJSDate(),
         netFunding: 5000,
         cash: 4000,
-        accountValue: 4000,
+      
+        accountValueHigh: 4000,
+        accountValueLow: 4000,
+        accountValueMedian: 4000,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         transactions: [fundingData[0]],
         betPnls: [betsPnl[0]]
       }),
@@ -131,7 +155,15 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 5000,
         cash: 4500,
-        accountValue: 4500,
+      
+        accountValueHigh: 4500,
+        accountValueLow: 4500,
+        accountValueMedian: 4500,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         transactions: [],
         betPnls: [betsPnl[1]]
       })
@@ -163,8 +195,15 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
-        bookValue: 1000,
-        accountValue: 4997,
+      
+        accountValueHigh: 4997,
+        accountValueLow: 4997,
+        accountValueMedian: 4997,
+        
+        bookValueHigh: 1000,
+        bookValueLow: 1000,
+        bookValueMedian: 1000,
+
         feesPaid: 3,
         trades: [tradeData[0]],
         transactions: [fundingData[0]],
@@ -176,8 +215,10 @@ describe("loadPortfolioSummary", () => {
             averagePrice: 10.03,
             size: 100,
             bookCost: 1003,
-            bookValue: 1000,
-            latestPrice: 10,
+            latestTradePrice: 10,
+            dailyLowPrice: 0,
+            dailyHighPrice: 0,
+            dailyMedianPrice: 0
           }
         }
       }),
@@ -187,8 +228,15 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
-        bookValue: 1000,
-        accountValue: 4997,
+      
+        accountValueHigh: 4997,
+        accountValueLow: 4997,
+        accountValueMedian: 4997,
+        
+        bookValueHigh: 1000,
+        bookValueLow: 1000,
+        bookValueMedian: 1000,
+
         feesPaid: 3,
         positions: {
           "AMD": {
@@ -198,8 +246,116 @@ describe("loadPortfolioSummary", () => {
             averagePrice: 10.03,
             size: 100,
             bookCost: 1003,
-            bookValue: 1000,
-            latestPrice: 10,
+            latestTradePrice: 10,
+            dailyLowPrice: 0,
+            dailyHighPrice: 0,
+            dailyMedianPrice: 0
+          }
+        }
+      })
+    ])
+  })
+
+  it ("should incorporate historical prices into portfolio value", async () => {
+    fundingData = [
+      getFunding(0, 5000),
+    ]
+    tradeData = [
+      getTrade(0, 0, "AMD", {
+        size: 100,
+        price: 10,
+        fees: 3
+      })
+    ]
+    historicalPrices = {
+      "AMD": [
+        {
+          startDate: getDate(0, 'time-zero').toJSDate(),
+          endDate: null,
+          low: 9,
+          high: 11,
+          open: 9.5,
+          close: 10.5,
+        },
+        {
+          startDate: getDate(1, 'time-zero').toJSDate(),
+          endDate: null,
+          low: 90,
+          high: 110,
+          open: 95,
+          close: 10.5,
+        }
+      ]
+    }
+
+    const portfolioSummary = await subject(settings, session, console, getDate(1).toJSDate())
+
+    expect(portfolioSummary).toEqual<PortfolioSlice[]>([
+      getPortfolioSlice({
+        uniqueId: getDate(-1).toISO(),
+        date: getDate(-1).toJSDate(),
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(0).toISO(),
+        date: getDate(0).toJSDate(),
+        netFunding: 5000,
+        cash: 3997,
+        bookCost: 1003,
+      
+        accountValueHigh: 5097,
+        accountValueLow: 4897,
+        accountValueMedian: 4997,
+        
+        bookValueHigh: 1100,
+        bookValueLow: 900,
+        bookValueMedian: 1000,
+
+        feesPaid: 3,
+        trades: [tradeData[0]],
+        transactions: [fundingData[0]],
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
+            averagePrice: 10.03,
+            size: 100,
+            bookCost: 1003,
+            latestTradePrice: 10,
+            dailyLowPrice: 9,
+            dailyHighPrice: 11,
+            dailyMedianPrice: 10
+          }
+        }
+      }),
+      getPortfolioSlice({
+        uniqueId: getDate(1).toISO(),
+        date: getDate(1).toJSDate(),
+        netFunding: 5000,
+        cash: 3997,
+        bookCost: 1003,
+      
+        accountValueHigh: 14997,
+        accountValueLow: 12997,
+        accountValueMedian: 13997,
+        
+        bookValueHigh: 11000,
+        bookValueLow: 9000,
+        bookValueMedian: 10000,
+
+        feesPaid: 3,
+        positions: {
+          "AMD": {
+            stockId: "AMD",
+            stockName: `AMD (Name)`,
+            stockAltName: `AMD (All Sessions)`,
+            averagePrice: 10.03,
+            size: 100,
+            bookCost: 1003,
+            latestTradePrice: 10,
+            dailyLowPrice: 90,
+            dailyHighPrice: 110,
+            dailyMedianPrice: 100
           }
         }
       })
@@ -236,8 +392,15 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 5194,
         bookCost: 0,
-        bookValue: 0,
-        accountValue: 5194,
+      
+        accountValueHigh: 5194,
+        accountValueLow: 5194,
+        accountValueMedian: 5194,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         feesPaid: 6,
         trades: [tradeData[0], tradeData[1]],
         transactions: [fundingData[0]],
@@ -249,8 +412,10 @@ describe("loadPortfolioSummary", () => {
             averagePrice: 0,
             size: 0,
             bookCost: 0,
-            bookValue: 0,
-            latestPrice: 12,
+            latestTradePrice: 12,
+            dailyLowPrice: 0,
+            dailyHighPrice: 0,
+            dailyMedianPrice: 0
           }
         }
       }),
@@ -259,10 +424,17 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 5000,
         cash: 5194,
-        accountValue: 5194,
         bookCost: 0,
-        bookValue: 0,
         feesPaid: 6,
+        
+        accountValueHigh: 5194,
+        accountValueLow: 5194,
+        accountValueMedian: 5194,
+        
+        bookValueHigh: 0,
+        bookValueLow: 0,
+        bookValueMedian: 0,
+
         positions: {
           "AMD": {
             stockId: "AMD",
@@ -271,8 +443,10 @@ describe("loadPortfolioSummary", () => {
             averagePrice: 0,
             size: 0,
             bookCost: 0,
-            bookValue: 0,
-            latestPrice: 12,
+            latestTradePrice: 12,
+            dailyLowPrice: 0,
+            dailyHighPrice: 0,
+            dailyMedianPrice: 0
           }
         }
       })
@@ -372,9 +546,16 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       netFunding: 0,
       cash: 0,
       bookCost: 0,
-      bookValue: 0,
-      accountValue: 0,
       feesPaid: 0,
+      
+      accountValueHigh: 0,
+      accountValueLow: 0,
+      accountValueMedian: 0,
+      
+      bookValueHigh: 0,
+      bookValueLow: 0,
+      bookValueMedian: 0,
+      
       trades: [],
       transactions: [],
       betPnls: [],

@@ -19,8 +19,10 @@ export interface Position {
   averagePrice: number
 
   // TODO: pull this data from proper feeds, rather than inferring it from recent trades
-  bookValue: number
-  latestPrice: number
+  latestTradePrice: number
+  dailyHighPrice: number
+  dailyLowPrice: number
+  dailyMedianPrice: number
 }
 
 export interface PortfolioSlice extends DataRow {
@@ -29,10 +31,15 @@ export interface PortfolioSlice extends DataRow {
   netFunding: number
   cash: number
   bookCost: number
-  bookValue: number
-  accountValue: number
   feesPaid: number
-
+  
+  accountValueHigh: number
+  accountValueMedian: number
+  accountValueLow: number
+  bookValueHigh: number
+  bookValueMedian: number
+  bookValueLow: number
+  
   trades: Trade[]
   transactions: FundingTransaction[]
   betPnls: BetsPNL[]
@@ -64,7 +71,7 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
   log.info(`Starting to build portfolio from ${cursor.left().toISO()} to ${toDate.toISOString()}`)
   
   const allPriceHistories: Record<string, Price[]> = {}
-  const getPrice = async (stockId: string, tradeDate: Date, returnPrice = false): Promise<Price | null> => {
+  const getPrice = async (stockId: string, tradeDate: Date): Promise<Price | null> => {
     if (!allPriceHistories[stockId]) {
       const pricesByStockId = await loadPrices(
         settings, log, session.accounts[0].xSecurityToken, 
@@ -72,10 +79,6 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
         "sell", [stockId])
 
       Object.assign(allPriceHistories, pricesByStockId)
-    }
-
-    if (!returnPrice) {
-      return null
     }
 
     const prices = allPriceHistories[stockId]
@@ -112,29 +115,10 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     }
 
     // 
-    // Update all portfolio positions with latest prices
-
-    for (const position of Object.values(slice.positions)) {
-      if (position.size === 0) {
-        continue
-      }
-
-      const price = await getPrice(position.stockId, slice.date, true)
-      if (!price) {
-        continue
-      }
-
-      position.latestPrice = price.high
-      position.bookValue = price.high * position.size
-    }
-
-    // 
     // Add new trades to portfolios
 
     while (allTrades.length > 0 && allTrades[0].tradeDateTime.valueOf() < cursor.right().valueOf()) {
-      const [trade] = allTrades.splice(0, 1)
-
-      const historicalPrice = await getPrice(trade.stockId, trade.tradeDateTime)
+      const [trade] = allTrades.splice(0, 1)      
 
       // Top level data
       slice.cash = slice.cash + trade.amounts.total.value
@@ -148,13 +132,10 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
           averagePrice: 0,
           bookCost: 0,
           size: 0,
-          bookValue: 0,
-          latestPrice: 0
-        }
-
-        let newPrice = trade.price
-        if (historicalPrice != null) {
-          newPrice = historicalPrice.high
+          latestTradePrice: 0,
+          dailyHighPrice: 0,
+          dailyLowPrice: 0,
+          dailyMedianPrice: 0
         }
 
         const newSize = current.size + trade.size
@@ -176,13 +157,30 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
         next.averagePrice = newSize === 0 
           ? 0 
           : next.bookCost / newSize
-        next.bookValue = (newSize * newPrice) 
-        next.latestPrice = newPrice 
+        next.latestTradePrice = trade.price 
 
         return next
       })
 
       slice.trades.push(trade)
+    }
+
+    // 
+    // Update all portfolio positions with latest prices
+
+    for (const position of Object.values(slice.positions)) {
+      if (position.size === 0) {
+        continue
+      }
+
+      const price = await getPrice(position.stockId, slice.date)
+      if (!price) {
+        continue
+      }
+
+      position.dailyHighPrice = price.high
+      position.dailyLowPrice = price.low
+      position.dailyMedianPrice = (price.high + price.low) / 2
     }
 
     // 
@@ -199,8 +197,14 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
 
     // Calculated data from positions
     slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
-    slice.bookValue = _.sumBy(Object.values(slice.positions), position => position.bookValue)
-    slice.accountValue = slice.bookValue + slice.cash
+    
+    slice.bookValueHigh = _.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size)
+    slice.bookValueLow = _.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size)
+    slice.bookValueMedian = _.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size)
+    
+    slice.accountValueHigh = slice.bookValueHigh + slice.cash
+    slice.accountValueLow = slice.bookValueLow + slice.cash
+    slice.accountValueMedian = slice.bookValueMedian + slice.cash
   }
   
   return portfolio.getSlices()
@@ -218,8 +222,11 @@ function editPosition(slice: PortfolioSlice, stockId: string, callback: (positio
       bookCost: 0,
       size: 0,
       averagePrice: 0,
-      bookValue: 0,
-      latestPrice: 0
+      
+      latestTradePrice: 0,
+      dailyLowPrice: 0,
+      dailyHighPrice: 0,
+      dailyMedianPrice: 0
     }
     
   slice.positions[stockId] = callback(currentPosition)
@@ -234,10 +241,17 @@ class Portfolio {
       date: null,
       cash: 0,
       bookCost: 0,
-      bookValue: 0,
-      accountValue: 0,
       netFunding: 0,
       feesPaid: 0,
+      
+      accountValueHigh: 0,
+      accountValueLow: 0,
+      accountValueMedian: 0,
+      
+      bookValueHigh: 0,
+      bookValueLow: 0,
+      bookValueMedian: 0,
+
       trades: [],
       transactions: [],
       betPnls: [],
