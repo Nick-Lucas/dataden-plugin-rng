@@ -33,9 +33,11 @@ export interface PortfolioSlice extends DataRow {
   bookCost: number
   feesPaid: number
   
+  accountValueLastTrade: number
   accountValueHigh: number
   accountValueMedian: number
   accountValueLow: number
+  bookValueLastTrade: number
   bookValueHigh: number
   bookValueMedian: number
   bookValueLow: number
@@ -201,10 +203,12 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     slice.bookValueHigh = _.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size)
     slice.bookValueLow = _.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size)
     slice.bookValueMedian = _.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size)
+    slice.bookValueLastTrade = _.sumBy(Object.values(slice.positions), position => position.latestTradePrice * position.size)
     
     slice.accountValueHigh = slice.bookValueHigh + slice.cash
     slice.accountValueLow = slice.bookValueLow + slice.cash
     slice.accountValueMedian = slice.bookValueMedian + slice.cash
+    slice.accountValueLastTrade = slice.bookValueLastTrade + slice.cash
   }
   
   return portfolio.getSlices()
@@ -244,10 +248,12 @@ class Portfolio {
       netFunding: 0,
       feesPaid: 0,
       
+      accountValueLastTrade: 0,
       accountValueHigh: 0,
       accountValueLow: 0,
       accountValueMedian: 0,
       
+      bookValueLastTrade: 0,
       bookValueHigh: 0,
       bookValueLow: 0,
       bookValueMedian: 0,

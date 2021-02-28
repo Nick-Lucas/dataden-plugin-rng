@@ -87,10 +87,12 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 5000,
       
+        accountValueLastTrade: 5000,
         accountValueHigh: 5000,
         accountValueLow: 5000,
         accountValueMedian: 5000,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -102,11 +104,13 @@ describe("loadPortfolioSummary", () => {
         date: getDate(1).toJSDate(),
         netFunding: 2400,
         cash: 2400,
-      
+        
+        accountValueLastTrade: 2400,
         accountValueHigh: 2400,
         accountValueLow: 2400,
         accountValueMedian: 2400,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -139,10 +143,12 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 4000,
       
+        accountValueLastTrade: 4000,
         accountValueHigh: 4000,
         accountValueLow: 4000,
         accountValueMedian: 4000,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -156,10 +162,12 @@ describe("loadPortfolioSummary", () => {
         netFunding: 5000,
         cash: 4500,
       
+        accountValueLastTrade: 4500,
         accountValueHigh: 4500,
         accountValueLow: 4500,
         accountValueMedian: 4500,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -196,10 +204,12 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
       
+        accountValueLastTrade: 4997,
         accountValueHigh: 4997,
         accountValueLow: 4997,
         accountValueMedian: 4997,
         
+        bookValueLastTrade: 1000,
         bookValueHigh: 1000,
         bookValueLow: 1000,
         bookValueMedian: 1000,
@@ -229,10 +239,12 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
       
+        accountValueLastTrade: 4997,
         accountValueHigh: 4997,
         accountValueLow: 4997,
         accountValueMedian: 4997,
         
+        bookValueLastTrade: 1000,
         bookValueHigh: 1000,
         bookValueLow: 1000,
         bookValueMedian: 1000,
@@ -302,10 +314,12 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
       
+        accountValueLastTrade: 4997,
         accountValueHigh: 5097,
         accountValueLow: 4897,
         accountValueMedian: 4997,
         
+        bookValueLastTrade: 1000,
         bookValueHigh: 1100,
         bookValueLow: 900,
         bookValueMedian: 1000,
@@ -335,10 +349,12 @@ describe("loadPortfolioSummary", () => {
         cash: 3997,
         bookCost: 1003,
       
+        accountValueLastTrade: 4997,
         accountValueHigh: 14997,
         accountValueLow: 12997,
         accountValueMedian: 13997,
         
+        bookValueLastTrade: 1000,
         bookValueHigh: 11000,
         bookValueLow: 9000,
         bookValueMedian: 10000,
@@ -393,10 +409,12 @@ describe("loadPortfolioSummary", () => {
         cash: 5194,
         bookCost: 0,
       
+        accountValueLastTrade: 5194,
         accountValueHigh: 5194,
         accountValueLow: 5194,
         accountValueMedian: 5194,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -427,10 +445,12 @@ describe("loadPortfolioSummary", () => {
         bookCost: 0,
         feesPaid: 6,
         
+        accountValueLastTrade: 5194,
         accountValueHigh: 5194,
         accountValueLow: 5194,
         accountValueMedian: 5194,
         
+        bookValueLastTrade: 0,
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
@@ -548,10 +568,12 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       bookCost: 0,
       feesPaid: 0,
       
+      accountValueLastTrade: 0,
       accountValueHigh: 0,
       accountValueLow: 0,
       accountValueMedian: 0,
       
+      bookValueLastTrade: 0,
       bookValueHigh: 0,
       bookValueLow: 0,
       bookValueMedian: 0,
