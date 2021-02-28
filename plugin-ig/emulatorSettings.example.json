@@ -1,0 +1,12 @@
+{
+  "plugin": {
+    "igApiUri": "https://api.ig.com",
+    "includeRawData": true,
+    "backdateToISO": "2000-01-01T00:00:00Z",
+    "batchLengthMonths": 2
+  },
+  "secrets": {
+    "igUsername": "",
+    "igPassword": ""
+  }
+}

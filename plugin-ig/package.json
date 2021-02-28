@@ -1,0 +1,38 @@
+{
+  "name": "dataden-plugin-ig",
+  "version": "0.1.0",
+  "description": "An example plugin, useful as a test plugin",
+  "main": "dist/index.js",
+  "license": "GPL-3.0-only",
+  "private": false,
+  "scripts": {
+    "build": "dataden-scripts build src/index.ts",
+    "watch": "dataden-scripts build src/index.ts --watch",
+    "start": "yarn run dataden-scripts run src/index.ts --skip-build --settings ./emulatorSettings.json --output output/",
+    "prepublishOnly": "yarn run build",
+    "test": "jest --watch"
+  },
+  "dependencies": {
+    "@dataden/sdk": "^0.6.0",
+    "@types/lodash": "^4.14.168",
+    "@types/luxon": "^1.26.0",
+    "axios": "^0.21.1",
+    "lodash": "^4.17.20",
+    "luxon": "^1.26.0",
+    "tslib": "^2.0.3"
+  },
+  "files": [
+    "dist/"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.13.1",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/preset-env": "^7.13.5",
+    "@babel/preset-typescript": "^7.13.0",
+    "@types/jest": "^26.0.20",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "jest-mock-axios": "^4.3.0",
+    "ts-node": "^9.1.1"
+  }
+}
