@@ -84,7 +84,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        netFunding: 5000,
         cash: 5000,
       
         accountValueLastTrade: 5000,
@@ -97,12 +96,13 @@ describe("loadPortfolioSummary", () => {
         bookValueLow: 0,
         bookValueMedian: 0,
 
+        netFunding: 5000,
+
         transactions: [fundingData[0]]
       }),
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        netFunding: 2400,
         cash: 2400,
         
         accountValueLastTrade: 2400,
@@ -114,6 +114,8 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
+
+        netFunding: 2400,
 
         transactions: [fundingData[1]]
       })
@@ -140,7 +142,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        netFunding: 5000,
         cash: 4000,
       
         accountValueLastTrade: 4000,
@@ -153,13 +154,22 @@ describe("loadPortfolioSummary", () => {
         bookValueLow: 0,
         bookValueMedian: 0,
 
+        netFunding: 5000,
+        netPlLastTrade: -1000,
+        netPlHigh: -1000,
+        netPlMedian: -1000,
+        netPlLow: -1000,
+        netPlPercentLastTrade: -20,
+        netPlPercentHigh: -20,
+        netPlPercentMedian: -20,
+        netPlPercentLow: -20,
+
         transactions: [fundingData[0]],
         betPnls: [betsPnl[0]]
       }),
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        netFunding: 5000,
         cash: 4500,
       
         accountValueLastTrade: 4500,
@@ -171,6 +181,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
+
+        netFunding: 5000,
+        netPlLastTrade: -500,
+        netPlHigh: -500,
+        netPlMedian: -500,
+        netPlLow: -500,
+        netPlPercentLastTrade: -10,
+        netPlPercentHigh: -10,
+        netPlPercentMedian: -10,
+        netPlPercentLow: -10,
 
         transactions: [],
         betPnls: [betsPnl[1]]
@@ -200,7 +220,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
       
@@ -213,6 +232,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 1000,
         bookValueLow: 1000,
         bookValueMedian: 1000,
+
+        netFunding: 5000,
+        netPlLastTrade: -3,
+        netPlHigh: -3,
+        netPlMedian: -3,
+        netPlLow: -3,
+        netPlPercentLastTrade: -0.06,
+        netPlPercentHigh: -0.06,
+        netPlPercentMedian: -0.06,
+        netPlPercentLow: -0.06,
 
         feesPaid: 3,
         trades: [tradeData[0]],
@@ -238,7 +267,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
       
@@ -251,6 +279,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 1000,
         bookValueLow: 1000,
         bookValueMedian: 1000,
+
+        netFunding: 5000,
+        netPlLastTrade: -3,
+        netPlHigh: -3,
+        netPlMedian: -3,
+        netPlLow: -3,
+        netPlPercentLastTrade: -0.06,
+        netPlPercentHigh: -0.06,
+        netPlPercentMedian: -0.06,
+        netPlPercentLow: -0.06,
 
         feesPaid: 3,
         positions: {
@@ -316,7 +354,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
       
@@ -329,6 +366,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 1100,
         bookValueLow: 900,
         bookValueMedian: 1000,
+
+        netFunding: 5000,
+        netPlLastTrade: -3,
+        netPlHigh: 97,
+        netPlMedian: -3,
+        netPlLow: -103,
+        netPlPercentHigh: 1.94,
+        netPlPercentLastTrade: -0.06,
+        netPlPercentLow: -2.06,
+        netPlPercentMedian: -0.06,
 
         feesPaid: 3,
         trades: [tradeData[0]],
@@ -354,7 +401,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        netFunding: 5000,
         cash: 3997,
         bookCost: 1003,
       
@@ -367,6 +413,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 11000,
         bookValueLow: 9000,
         bookValueMedian: 10000,
+
+        netFunding: 5000,
+        netPlHigh: 9997,
+        netPlLastTrade: -3,
+        netPlLow: 7997,
+        netPlMedian: 8997,
+        netPlPercentHigh: 199.94,
+        netPlPercentLastTrade: -0.06,
+        netPlPercentLow: 159.94,
+        netPlPercentMedian: 179.94,
 
         feesPaid: 3,
         positions: {
@@ -417,7 +473,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(0).toISO(),
         date: getDate(0).toJSDate(),
-        netFunding: 5000,
         cash: 5194,
         bookCost: 0,
       
@@ -430,6 +485,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
+
+        netFunding: 5000,
+        netPlLastTrade: 194,
+        netPlHigh: 194,
+        netPlMedian: 194,
+        netPlLow: 194,
+        netPlPercentHigh: 3.88,
+        netPlPercentLastTrade: 3.88,
+        netPlPercentLow: 3.88,
+        netPlPercentMedian: 3.88,
 
         feesPaid: 6,
         trades: [tradeData[0], tradeData[1]],
@@ -455,7 +520,6 @@ describe("loadPortfolioSummary", () => {
       getPortfolioSlice({
         uniqueId: getDate(1).toISO(),
         date: getDate(1).toJSDate(),
-        netFunding: 5000,
         cash: 5194,
         bookCost: 0,
         feesPaid: 6,
@@ -469,6 +533,16 @@ describe("loadPortfolioSummary", () => {
         bookValueHigh: 0,
         bookValueLow: 0,
         bookValueMedian: 0,
+
+        netFunding: 5000,
+        netPlLastTrade: 194,
+        netPlHigh: 194,
+        netPlMedian: 194,
+        netPlLow: 194,
+        netPlPercentHigh: 3.88,
+        netPlPercentLastTrade: 3.88,
+        netPlPercentLow: 3.88,
+        netPlPercentMedian: 3.88,
 
         positions: {
           "AMD": {
@@ -585,7 +659,7 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
     {
       uniqueId: getDate(0).toISO(),
       date: getDate(0).toJSDate(),
-      netFunding: 0,
+      
       cash: 0,
       bookCost: 0,
       feesPaid: 0,
@@ -599,6 +673,16 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       bookValueHigh: 0,
       bookValueLow: 0,
       bookValueMedian: 0,
+      
+      netFunding: 0,
+      netPlLastTrade: 0,
+      netPlHigh: 0,
+      netPlMedian: 0,
+      netPlLow: 0,
+      netPlPercentLastTrade: 0,
+      netPlPercentHigh: 0,
+      netPlPercentMedian: 0,
+      netPlPercentLow: 0,
       
       trades: [],
       transactions: [],
