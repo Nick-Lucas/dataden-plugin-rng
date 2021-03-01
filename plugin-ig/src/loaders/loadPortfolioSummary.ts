@@ -229,27 +229,27 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     }
 
     // Calculated data from positions
-    slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
+    slice.bookCost = round(_.sumBy(Object.values(slice.positions), position => position.bookCost))
     
-    slice.bookValueLastTrade = _.sumBy(Object.values(slice.positions), position => position.latestTradePrice * position.size)
-    slice.bookValueHigh = _.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size)
-    slice.bookValueMedian = _.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size)
-    slice.bookValueLow = _.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size)
+    slice.bookValueLastTrade = round(_.sumBy(Object.values(slice.positions), position => position.latestTradePrice * position.size))
+    slice.bookValueHigh = round(_.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size))
+    slice.bookValueMedian = round(_.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size))
+    slice.bookValueLow = round(_.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size))
     
-    slice.accountValueLastTrade = slice.bookValueLastTrade + slice.cash
-    slice.accountValueHigh = slice.bookValueHigh + slice.cash
-    slice.accountValueMedian = slice.bookValueMedian + slice.cash
-    slice.accountValueLow = slice.bookValueLow + slice.cash
+    slice.accountValueLastTrade = round(slice.bookValueLastTrade + slice.cash)
+    slice.accountValueHigh = round(slice.bookValueHigh + slice.cash)
+    slice.accountValueMedian = round(slice.bookValueMedian + slice.cash)
+    slice.accountValueLow = round(slice.bookValueLow + slice.cash)
 
-    slice.netPlLastTrade = slice.accountValueLastTrade - slice.netFunding
-    slice.netPlHigh = slice.accountValueHigh - slice.netFunding
-    slice.netPlMedian = slice.accountValueMedian - slice.netFunding
-    slice.netPlLow = slice.accountValueLow - slice.netFunding
+    slice.netPlLastTrade = round(slice.accountValueLastTrade - slice.netFunding)
+    slice.netPlHigh = round(slice.accountValueHigh - slice.netFunding)
+    slice.netPlMedian = round(slice.accountValueMedian - slice.netFunding)
+    slice.netPlLow = round(slice.accountValueLow - slice.netFunding)
     
-    slice.bookPlLastTrade = slice.bookValueLastTrade - slice.bookCost
-    slice.bookPlHigh = slice.bookValueHigh - slice.bookCost
-    slice.bookPlMedian = slice.bookValueMedian - slice.bookCost
-    slice.bookPlLow = slice.bookValueLow - slice.bookCost
+    slice.bookPlLastTrade = round(slice.bookValueLastTrade - slice.bookCost)
+    slice.bookPlHigh = round(slice.bookValueHigh - slice.bookCost)
+    slice.bookPlMedian = round(slice.bookValueMedian - slice.bookCost)
+    slice.bookPlLow = round(slice.bookValueLow - slice.bookCost)
     slice.bookPlPercentLastTrade = slice.bookCost !== 0 ? round(slice.bookPlLastTrade / slice.bookCost * 100) : 0
     slice.bookPlPercentHigh = slice.bookCost !== 0 ? round(slice.bookPlHigh / slice.bookCost * 100) : 0
     slice.bookPlPercentMedian = slice.bookCost !== 0 ? round(slice.bookPlMedian / slice.bookCost * 100) : 0
