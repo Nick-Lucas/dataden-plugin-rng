@@ -159,10 +159,6 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: -1000,
         netPlMedian: -1000,
         netPlLow: -1000,
-        netPlPercentLastTrade: -20,
-        netPlPercentHigh: -20,
-        netPlPercentMedian: -20,
-        netPlPercentLow: -20,
 
         transactions: [fundingData[0]],
         betPnls: [betsPnl[0]]
@@ -187,10 +183,6 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: -500,
         netPlMedian: -500,
         netPlLow: -500,
-        netPlPercentLastTrade: -10,
-        netPlPercentHigh: -10,
-        netPlPercentMedian: -10,
-        netPlPercentLow: -10,
 
         transactions: [],
         betPnls: [betsPnl[1]]
@@ -238,10 +230,15 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: -3,
         netPlMedian: -3,
         netPlLow: -3,
-        netPlPercentLastTrade: -0.06,
-        netPlPercentHigh: -0.06,
-        netPlPercentMedian: -0.06,
-        netPlPercentLow: -0.06,
+
+        bookPlLastTrade: -3,
+        bookPlHigh: -3,
+        bookPlMedian: -3,
+        bookPlLow: -3,
+        bookPlPercentLastTrade: -0.3,
+        bookPlPercentHigh: -0.3,
+        bookPlPercentMedian: -0.3,
+        bookPlPercentLow: -0.3,
 
         feesPaid: 3,
         trades: [tradeData[0]],
@@ -285,10 +282,15 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: -3,
         netPlMedian: -3,
         netPlLow: -3,
-        netPlPercentLastTrade: -0.06,
-        netPlPercentHigh: -0.06,
-        netPlPercentMedian: -0.06,
-        netPlPercentLow: -0.06,
+
+        bookPlLastTrade: -3,
+        bookPlHigh: -3,
+        bookPlMedian: -3,
+        bookPlLow: -3,
+        bookPlPercentLastTrade: -0.3,
+        bookPlPercentHigh: -0.3,
+        bookPlPercentMedian: -0.3,
+        bookPlPercentLow: -0.3,
 
         feesPaid: 3,
         positions: {
@@ -372,10 +374,15 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: 97,
         netPlMedian: -3,
         netPlLow: -103,
-        netPlPercentHigh: 1.94,
-        netPlPercentLastTrade: -0.06,
-        netPlPercentLow: -2.06,
-        netPlPercentMedian: -0.06,
+
+        bookPlLastTrade: -3,
+        bookPlHigh: 97,
+        bookPlMedian: -3,
+        bookPlLow: -103,
+        bookPlPercentLastTrade: -0.3,
+        bookPlPercentHigh: 9.67,
+        bookPlPercentMedian: -0.3,
+        bookPlPercentLow: -10.27,
 
         feesPaid: 3,
         trades: [tradeData[0]],
@@ -419,10 +426,15 @@ describe("loadPortfolioSummary", () => {
         netPlLastTrade: -3,
         netPlLow: 7997,
         netPlMedian: 8997,
-        netPlPercentHigh: 199.94,
-        netPlPercentLastTrade: -0.06,
-        netPlPercentLow: 159.94,
-        netPlPercentMedian: 179.94,
+
+        bookPlHigh: 9997,
+        bookPlLastTrade: -3,
+        bookPlLow: 7997,
+        bookPlMedian: 8997,
+        bookPlPercentHigh: 996.71,
+        bookPlPercentLastTrade: -0.3,
+        bookPlPercentLow: 797.31,
+        bookPlPercentMedian: 897.01,
 
         feesPaid: 3,
         positions: {
@@ -491,10 +503,6 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: 194,
         netPlMedian: 194,
         netPlLow: 194,
-        netPlPercentHigh: 3.88,
-        netPlPercentLastTrade: 3.88,
-        netPlPercentLow: 3.88,
-        netPlPercentMedian: 3.88,
 
         feesPaid: 6,
         trades: [tradeData[0], tradeData[1]],
@@ -539,10 +547,6 @@ describe("loadPortfolioSummary", () => {
         netPlHigh: 194,
         netPlMedian: 194,
         netPlLow: 194,
-        netPlPercentHigh: 3.88,
-        netPlPercentLastTrade: 3.88,
-        netPlPercentLow: 3.88,
-        netPlPercentMedian: 3.88,
 
         positions: {
           "AMD": {
@@ -679,10 +683,15 @@ function getPortfolioSlice(slice: Partial<PortfolioSlice>) : PortfolioSlice {
       netPlHigh: 0,
       netPlMedian: 0,
       netPlLow: 0,
-      netPlPercentLastTrade: 0,
-      netPlPercentHigh: 0,
-      netPlPercentMedian: 0,
-      netPlPercentLow: 0,
+
+      bookPlLastTrade: 0,
+      bookPlHigh: 0,
+      bookPlMedian: 0,
+      bookPlLow: 0,
+      bookPlPercentLastTrade: 0,
+      bookPlPercentHigh: 0,
+      bookPlPercentMedian: 0,
+      bookPlPercentLow: 0,
       
       trades: [],
       transactions: [],

@@ -8,6 +8,7 @@ import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
 import { loadAllBetsPNL, BetsPNL } from "../api/bets-pnl"
 import { loadPrices, Price } from "../api/prices";
+import { round } from "../converters";
 
 export interface Position {
   stockId: string
@@ -46,16 +47,21 @@ export interface PortfolioSlice extends DataRow {
   bookValueHigh: number
   bookValueMedian: number
   bookValueLow: number
+  
+  bookPlLastTrade: number
+  bookPlHigh: number
+  bookPlMedian: number
+  bookPlLow: number
+  bookPlPercentLastTrade: number
+  bookPlPercentHigh: number
+  bookPlPercentMedian: number
+  bookPlPercentLow: number
 
   netFunding: number
   netPlLastTrade: number
   netPlHigh: number
   netPlMedian: number
   netPlLow: number
-  netPlPercentLastTrade: number
-  netPlPercentHigh: number
-  netPlPercentMedian: number
-  netPlPercentLow: number
   
   trades: Trade[]
   transactions: FundingTransaction[]
@@ -239,10 +245,15 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     slice.netPlHigh = slice.accountValueHigh - slice.netFunding
     slice.netPlMedian = slice.accountValueMedian - slice.netFunding
     slice.netPlLow = slice.accountValueLow - slice.netFunding
-    slice.netPlPercentLastTrade = slice.netFunding !== 0 ? (slice.netPlLastTrade / slice.netFunding * 100) : 0
-    slice.netPlPercentHigh = slice.netFunding !== 0 ? (slice.netPlHigh / slice.netFunding * 100) : 0
-    slice.netPlPercentMedian = slice.netFunding !== 0 ? (slice.netPlMedian / slice.netFunding * 100) : 0
-    slice.netPlPercentLow = slice.netFunding !== 0 ? (slice.netPlLow / slice.netFunding * 100) : 0
+    
+    slice.bookPlLastTrade = slice.bookValueLastTrade - slice.bookCost
+    slice.bookPlHigh = slice.bookValueHigh - slice.bookCost
+    slice.bookPlMedian = slice.bookValueMedian - slice.bookCost
+    slice.bookPlLow = slice.bookValueLow - slice.bookCost
+    slice.bookPlPercentLastTrade = slice.bookCost !== 0 ? round(slice.bookPlLastTrade / slice.bookCost * 100) : 0
+    slice.bookPlPercentHigh = slice.bookCost !== 0 ? round(slice.bookPlHigh / slice.bookCost * 100) : 0
+    slice.bookPlPercentMedian = slice.bookCost !== 0 ? round(slice.bookPlMedian / slice.bookCost * 100) : 0
+    slice.bookPlPercentLow = slice.bookCost !== 0 ? round(slice.bookPlLow / slice.bookCost * 100) : 0
   }
   
   return portfolio.getSlices()
@@ -295,15 +306,20 @@ class Portfolio {
       bookValueLow: 0,
       bookValueMedian: 0,
 
+      bookPlLastTrade: 0,
+      bookPlHigh: 0,
+      bookPlMedian: 0,
+      bookPlLow: 0,
+      bookPlPercentLastTrade: 0,
+      bookPlPercentHigh: 0,
+      bookPlPercentMedian: 0,
+      bookPlPercentLow: 0,
+
       netFunding: 0,
       netPlLastTrade: 0,
       netPlHigh: 0,
       netPlMedian: 0,
       netPlLow: 0,
-      netPlPercentLastTrade: 0,
-      netPlPercentHigh: 0,
-      netPlPercentMedian: 0,
-      netPlPercentLow: 0,
 
       trades: [],
       transactions: [],
