@@ -165,6 +165,7 @@ export default createPlugin({
               settings.plugin.batchLengthMonths)
           }
         } else {
+          log.info(`Generating batches between ${String(rehydrationData.lastDate)} and ${toDateISO}`)
           const newBatches = generateBatches(
             rehydrationData.lastDate, 
             toDateISO,
@@ -172,6 +173,7 @@ export default createPlugin({
 
           rehydrationData.pending.push(...newBatches)
         }
+        log.info(`Batches to work on: ${rehydrationData.pending.length}`)
 
         const accounts = await getAccounts(tokens.access_token)
         log.info(`Loaded ${accounts.length} accounts`)
@@ -252,7 +254,7 @@ export default createPlugin({
 })
 
 interface RehydrationData {
-  lastDate: string
+  lastDate: string | Date
   pending: Batch[]
 }
 
