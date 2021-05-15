@@ -8,6 +8,7 @@ import { FundingTransaction, loadFunding } from "./loadFunding"
 import { loadAllTrades, Trade } from "../api/trades"
 import { loadAllBetsPNL, BetsPNL } from "../api/bets-pnl"
 import { loadPrices, Price } from "../api/prices";
+import { round } from "../converters";
 
 export interface Position {
   stockId: string
@@ -33,7 +34,6 @@ export interface Position {
 export interface PortfolioSlice extends DataRow {
   date: Date
   
-  netFunding: number
   cash: number
   bookCost: number
   feesPaid: number
@@ -42,10 +42,26 @@ export interface PortfolioSlice extends DataRow {
   accountValueHigh: number
   accountValueMedian: number
   accountValueLow: number
+
   bookValueLastTrade: number
   bookValueHigh: number
   bookValueMedian: number
   bookValueLow: number
+  
+  bookPlLastTrade: number
+  bookPlHigh: number
+  bookPlMedian: number
+  bookPlLow: number
+  bookPlPercentLastTrade: number
+  bookPlPercentHigh: number
+  bookPlPercentMedian: number
+  bookPlPercentLow: number
+
+  netFunding: number
+  netPlLastTrade: number
+  netPlHigh: number
+  netPlMedian: number
+  netPlLow: number
   
   trades: Trade[]
   transactions: FundingTransaction[]
@@ -213,17 +229,31 @@ export const loadPortfolioSummary = async (settings: Settings, session: SessionR
     }
 
     // Calculated data from positions
-    slice.bookCost = _.sumBy(Object.values(slice.positions), position => position.bookCost)
+    slice.bookCost = round(_.sumBy(Object.values(slice.positions), position => position.bookCost))
     
-    slice.bookValueHigh = _.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size)
-    slice.bookValueLow = _.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size)
-    slice.bookValueMedian = _.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size)
-    slice.bookValueLastTrade = _.sumBy(Object.values(slice.positions), position => position.latestTradePrice * position.size)
+    slice.bookValueLastTrade = round(_.sumBy(Object.values(slice.positions), position => position.latestTradePrice * position.size))
+    slice.bookValueHigh = round(_.sumBy(Object.values(slice.positions), position => (position.dailyHighPrice || position.latestTradePrice) * position.size))
+    slice.bookValueMedian = round(_.sumBy(Object.values(slice.positions), position => (position.dailyMedianPrice || position.latestTradePrice) * position.size))
+    slice.bookValueLow = round(_.sumBy(Object.values(slice.positions), position => (position.dailyLowPrice || position.latestTradePrice) * position.size))
     
-    slice.accountValueHigh = slice.bookValueHigh + slice.cash
-    slice.accountValueLow = slice.bookValueLow + slice.cash
-    slice.accountValueMedian = slice.bookValueMedian + slice.cash
-    slice.accountValueLastTrade = slice.bookValueLastTrade + slice.cash
+    slice.accountValueLastTrade = round(slice.bookValueLastTrade + slice.cash)
+    slice.accountValueHigh = round(slice.bookValueHigh + slice.cash)
+    slice.accountValueMedian = round(slice.bookValueMedian + slice.cash)
+    slice.accountValueLow = round(slice.bookValueLow + slice.cash)
+
+    slice.netPlLastTrade = round(slice.accountValueLastTrade - slice.netFunding)
+    slice.netPlHigh = round(slice.accountValueHigh - slice.netFunding)
+    slice.netPlMedian = round(slice.accountValueMedian - slice.netFunding)
+    slice.netPlLow = round(slice.accountValueLow - slice.netFunding)
+    
+    slice.bookPlLastTrade = round(slice.bookValueLastTrade - slice.bookCost)
+    slice.bookPlHigh = round(slice.bookValueHigh - slice.bookCost)
+    slice.bookPlMedian = round(slice.bookValueMedian - slice.bookCost)
+    slice.bookPlLow = round(slice.bookValueLow - slice.bookCost)
+    slice.bookPlPercentLastTrade = slice.bookCost !== 0 ? round(slice.bookPlLastTrade / slice.bookCost * 100) : 0
+    slice.bookPlPercentHigh = slice.bookCost !== 0 ? round(slice.bookPlHigh / slice.bookCost * 100) : 0
+    slice.bookPlPercentMedian = slice.bookCost !== 0 ? round(slice.bookPlMedian / slice.bookCost * 100) : 0
+    slice.bookPlPercentLow = slice.bookCost !== 0 ? round(slice.bookPlLow / slice.bookCost * 100) : 0
   }
   
   return portfolio.getSlices()
@@ -264,7 +294,6 @@ class Portfolio {
       date: null,
       cash: 0,
       bookCost: 0,
-      netFunding: 0,
       feesPaid: 0,
       
       accountValueLastTrade: 0,
@@ -276,6 +305,21 @@ class Portfolio {
       bookValueHigh: 0,
       bookValueLow: 0,
       bookValueMedian: 0,
+
+      bookPlLastTrade: 0,
+      bookPlHigh: 0,
+      bookPlMedian: 0,
+      bookPlLow: 0,
+      bookPlPercentLastTrade: 0,
+      bookPlPercentHigh: 0,
+      bookPlPercentMedian: 0,
+      bookPlPercentLow: 0,
+
+      netFunding: 0,
+      netPlLastTrade: 0,
+      netPlHigh: 0,
+      netPlMedian: 0,
+      netPlLow: 0,
 
       trades: [],
       transactions: [],
