@@ -1,6 +1,6 @@
 {
   "name": "dataden-plugin-truelayer",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A truelayer Open Banking integration",
   "main": "dist/index.js",
   "license": "GPL-3.0-only",
@@ -27,6 +27,7 @@
     "@babel/preset-env": "^7.13.5",
     "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^26.0.20",
+    "@types/lodash": "^4.14.169",
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
     "jest-mock-axios": "^4.3.0",
