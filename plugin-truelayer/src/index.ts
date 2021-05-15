@@ -1,8 +1,8 @@
 import { createPlugin, Settings, PluginAuth, DataRow } from "@dataden/sdk";
 import _ from 'lodash'
 import axios from "axios";
-import { DateTime, Duration } from "luxon";
 import { Account, getAccounts, getTransactions, Transaction } from "./api";
+import { generateBatches, Batch } from "./generateBatches";
 
 interface PluginSettings extends Record<string, any> {
   backdateToISO: string
@@ -256,33 +256,4 @@ interface RehydrationData {
   pending: Batch[]
 }
 
-interface Batch {
-  dateFromISO: string
-  dateToISO: string
-  failCount: number
-}
 
-function generateBatches(fromDateISO: string, toDateISO: string, batchLengthMonths: number): Batch[] {
-  const batches: Batch[] = []
-
-  const grain = Duration.fromObject({
-    months: batchLengthMonths
-  })
-
-  let left = DateTime.fromISO(fromDateISO)
-  const toDate = DateTime.fromISO(toDateISO)
-
-  while (left.valueOf() < toDate.valueOf()) {
-    const right = DateTime.min(left.plus(grain), toDate)
-    
-    batches.push({
-      dateFromISO: left.toISO(),
-      dateToISO: right.toISO(),
-      failCount: 0
-    })
-
-    left = right
-  }
-
-  return batches
-}
